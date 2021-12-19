@@ -35,6 +35,17 @@ bool Transaction::operator==(const Transaction* transactionToCompareWith) const 
 	);
 }
 
+bool Transaction::operator>(const Transaction* transactionToCompareWith) const {
+	return (transactionToCompareWith->timestamp > timestamp
+		&& transactionToCompareWith->desc > desc
+		&& transactionToCompareWith->value > value
+		);
+}
+
+bool Transaction::operator<(const Transaction* transactionToCompareWith) const {
+	return transactionToCompareWith > this;
+}
+
 std::string Transaction::toString() {
-	return "-- " + desc + ": " + std::to_string(value) + " on " + std::asctime(std::localtime(&timestamp)); // TODO: Replace with safe function
+	return "-- " + desc + ": $" + std::to_string(value) + " on " + std::asctime(std::localtime(&timestamp)); // TODO: Replace with safe function
 }

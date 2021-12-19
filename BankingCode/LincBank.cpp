@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 #include "Accounts/Account.h"
 #include "Accounts/Current.h"
@@ -44,14 +45,18 @@ int main()
 		parameters.clear(); 
 		std::cout << std::endl << ">>> ";
 
+		// Extract and store input
 		std::getline(std::cin, userCommand);
 
+		// Initialize C-like string and save it
 		char* cstr = new char[userCommand.length() + 1];
 		strcpy(cstr, userCommand.c_str());
 
+		// Split input string into parts
 		char* token;
 		token = strtok(cstr, " ");
 
+		// Save each input parametr
 		while (token != NULL)
 		{
 			parameters.push_back(token);
@@ -62,6 +67,7 @@ int main()
 
 		try 
 		{
+			// If no command - ignore
 			if (parameters.empty()) continue;
 
 			// Get main command parametr
@@ -87,7 +93,7 @@ int main()
 				if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
 				
 				// Check for non-negative value or incorrect amount for ISA
-				if (type == 3) 
+				if (type == 3)
 				{
 					// ISA account requires minimum deposit of 1000
 					if (openingBalance < 1000) throw Exceptions::IncorrectArgumentValue("ISA accounts require opening balance of 1000 or more!");
@@ -116,7 +122,7 @@ int main()
 				// ID of next account
 				long newID = openedAccounts.size() + 1;
 
-				// Open accounts
+				// Open account and save it to lastSelected
 				switch (type)
 				{
 					case (1):
@@ -172,7 +178,7 @@ int main()
 					// Check if index is negative, negative bound and if it exists
 					if (index <= 0 || index-1 > index || openedAccounts.size() < index) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
-					// Save last select
+					// Save last select (don't care about overflow because of previous check)
 					lastSelectedAccount = openedAccounts[index-1];
 
 					// Print data about account
@@ -191,7 +197,7 @@ int main()
 				
 				double amount = InputParser::parse<double>(parameters[1]);
 
-				// Check if amount to withdraw is 0
+				// Check if amount to deposit / withdraw is 0
 				if (amount <= 0) throw Exceptions::IncorrectArgumentValue("Deposit or Withdraw amount should be more than 0!");
 
 				// Check if any accounts are open
@@ -239,7 +245,7 @@ int main()
 				// Check amount
 				if (sum <= 0) throw Exceptions::IncorrectArgumentValue("Tranfer amount should more than 0!");
 				
-				// Get possision index of accounts
+				// Get absolute index of accounts
 				src--;
 				dest--;
 
@@ -264,16 +270,13 @@ int main()
 				// Check amount
 				if (amountOfYears <= 0) throw Exceptions::IncorrectArgumentValue("Project time should be more than 0!");
 
-				// Select Savings account
-				Accounts::Savings* saving = NULL;
+				// Check if last selected is not savings account
+				Accounts::Savings* saving = dynamic_cast<Accounts::Savings*>(lastSelectedAccount);
 
-				// Check if last selected is savings account
-				if (saving != dynamic_cast<Accounts::Savings*>(lastSelectedAccount)) {
-
+				if (saving == NULL) {
 					// Select last savings or ISA created account
-					for (auto account : openedAccounts) {
-						if (saving = dynamic_cast<Accounts::Savings*>(account)) {
-							// Downcast successful
+					for (std::vector<Accounts::Account*>::reverse_iterator it = openedAccounts.rbegin(); it != openedAccounts.rend(); it++) {
+						if (saving = dynamic_cast<Accounts::Savings*>(*it)) {
 							break;
 						}
 					}
@@ -301,7 +304,7 @@ int main()
 				if (lastSelectedAccount == NULL) lastSelectedAccount = openedAccounts[openedAccounts.size() - 1];
 
 				// Find particular transaction
-				if (Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(type) + std::to_string(amount) + std::to_string(time_stamp))) {
+				if (Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount))) {
 					
 					// Print all the data related to transaction
 					std::cout << (*transaction).toString();

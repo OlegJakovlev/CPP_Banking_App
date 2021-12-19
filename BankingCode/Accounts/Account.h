@@ -16,7 +16,7 @@ namespace Accounts {
 	protected:
 		long id;
 		double balance;
-		std::map<std::string, Transaction*> historyUpdated; // Dictionary [key]=value (Red-black tree)
+		std::map<std::string, Transaction*> history; // Dictionary [key]=value (Red-black tree)
 		std::string accountName;
 
 	protected:

@@ -52,6 +52,6 @@ namespace Accounts {
 
 	std::string Current::toString()
 	{
-		return Account::toString() + " | Overdraft available: " + std::to_string(overdraft);
+		return Account::toString() + " | Overdraft available: $" + std::to_string(overdraft);
 	}
 }

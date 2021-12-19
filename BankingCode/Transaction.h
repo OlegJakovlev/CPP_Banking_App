@@ -20,8 +20,9 @@ public:
 	~Transaction();
 
 public:
-	
 	bool operator==(const Transaction* transactionToCompareWith) const;
+	bool operator>(const Transaction* transactionToCompareWith) const;
+	bool operator<(const Transaction* transactionToCompareWith) const;
 	std::string toString();
 };
 

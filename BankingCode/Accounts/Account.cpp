@@ -8,7 +8,7 @@ namespace Accounts {
 	}
 
 	Account::~Account() {
-		delete &historyUpdated;
+		delete & history;
 	}
 
 	void Account::deposit(double amount) {
@@ -24,10 +24,10 @@ namespace Accounts {
 	}
 
 	void Account::transfer(Account* destination, double amount) {
-		// Substract balance
 		balance -= amount;
 		(*destination).balance += amount;
 		
+		// Create transaction for each of accounts with different descriptions
 		addTransaction(Transaction::transactionType::transfer, amount, "Transfer to " + std::to_string((*destination).getID()));
 		(*destination).addTransaction(Transaction::transactionType::transfer, amount, "Transfer from " + std::to_string(getID()));
 
@@ -44,23 +44,22 @@ namespace Accounts {
 	}
 
 	std::string Account::toString() {
-		return ("ID: " + std::to_string(id) + " | Type: " + accountName + " | Balance: " + std::to_string(balance));
+		return ("ID: " + std::to_string(id) + " | Type: " + accountName + " | Balance: $" + std::to_string(balance));
 	}
 
 	Transaction* Account::searchTransaction(std::string key)
 	{
-		return historyUpdated[key];
+		return history[key];
 	}
 
 	void Account::addTransaction(Transaction::transactionType type, double amount, std::string description) {
-		// Create new transaction
 		Transaction* newTransaction = new Transaction(type, amount, description);
 
-		// Hash table solution
-		historyUpdated[
-			std::to_string((int)type) +
-				std::to_string(amount) +
-				std::to_string(std::time(0))
+		// Red-Black Tree solution
+		history[
+			std::to_string(std::time(0))+
+				std::to_string((int)type) +
+				std::to_string(amount)
 		] = newTransaction;
 	}
 
@@ -68,12 +67,12 @@ namespace Accounts {
 	{
 		std::vector<Transaction*> result;
 
-		// Create start and end pointers
-		std::map<std::string, Transaction*>::reverse_iterator it = historyUpdated.rbegin();
+		// Initialize start and end pointers
+		std::map<std::string, Transaction*>::reverse_iterator it = history.rbegin();
 		std::map<std::string, Transaction*>::reverse_iterator end_it  = it;
 		
 		// Iterate throught and get last memory adress possible / need
-		std::advance(end_it, (amount > historyUpdated.size()) ? historyUpdated.size() : amount);
+		std::advance(end_it, (amount > history.size()) ? history.size() : amount);
 
 		// Iterate throught and save transactions
 		for (; it != end_it; ++it) {

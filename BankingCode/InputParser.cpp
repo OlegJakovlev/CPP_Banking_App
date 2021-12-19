@@ -1,11 +1,9 @@
 #include "InputParser.h"
 
-/* Any workaround for non-implemented types?
 template <typename T>
-T InputParser::parse<T>(std::string toParse) {
-	std::cout << "Error" << std::endl;
+T InputParser::parse(std::string toParse) {
+	throw Exceptions::IncorrectArgumentTypes("No parsing rule exists!");
 }
-*/
 
 template <>
 unsigned InputParser::parse<unsigned>(std::string toParse) {
