@@ -146,6 +146,7 @@
     <ClCompile Include="Exceptions\IncorrectAmountOfArguments.cpp" />
     <ClCompile Include="Exceptions\IncorrectArgumentTypes.cpp" />
     <ClCompile Include="Exceptions\IncorrectArgumentValue.cpp" />
+    <ClCompile Include="AccountFactories\AccountFactory.cpp" />
     <ClCompile Include="InputParser.cpp" />
     <ClCompile Include="InterestEarning.cpp" />
     <ClCompile Include="LincBank.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Exceptions\IncorrectAmountOfArguments.h" />
     <ClInclude Include="Exceptions\IncorrectArgumentTypes.h" />
     <ClInclude Include="Exceptions\IncorrectArgumentValue.h" />
+    <ClInclude Include="AccountFactories\AccountFactory.h" />
     <ClInclude Include="InputParser.h" />
     <ClInclude Include="InterestEarning.h" />
     <ClInclude Include="Transaction.h" />

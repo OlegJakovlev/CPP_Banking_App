@@ -11,7 +11,7 @@ namespace Exceptions {
     {
     public:
         IncorrectAmountOfArguments();
-        ~IncorrectAmountOfArguments();
+        ~IncorrectAmountOfArguments() override;
     };
 }
 

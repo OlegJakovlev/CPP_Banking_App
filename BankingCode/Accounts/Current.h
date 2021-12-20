@@ -14,7 +14,7 @@ namespace Accounts {
 
 	public:
 		Current(long newID, double newBalance, double newOverdraft = 500);
-		~Current();
+		~Current() override;
 
 	public:
 		double getOverdraft();

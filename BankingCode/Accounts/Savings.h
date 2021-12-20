@@ -15,7 +15,7 @@ namespace Accounts {
 	
 	public:
 		Savings(long newID, double openingBalance, bool isIsa=false);
-		~Savings();
+		~Savings() override;
 		double computeInterest(double years);
 		bool isISA();
 	};

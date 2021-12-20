@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "AccountFactories/AccountFactory.h"
 #include "Accounts/Account.h"
 #include "Accounts/Current.h"
 #include "Accounts/Savings.h"
@@ -33,7 +34,7 @@ int main()
 	std::vector <std::string> parameters;
 	std::string userCommand;
 
-	std::vector <Accounts::Account*> openedAccounts;
+	AccountFactories::AccountFactory accountFactory;
 	Accounts::Account* lastSelectedAccount = NULL;
 
 	std::cout << "~~~ Welcome to LincBank! ~~~" << std::endl;
@@ -89,59 +90,26 @@ int main()
 				unsigned type = InputParser::parse<unsigned>(parameters[1]);
 				double openingBalance = InputParser::parse<double>(parameters[2]);
 
-				// Check balance
-				if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
-				
-				// Check for non-negative value or incorrect amount for ISA
-				if (type == 3)
-				{
-					// ISA account requires minimum deposit of 1000
-					if (openingBalance < 1000) throw Exceptions::IncorrectArgumentValue("ISA accounts require opening balance of 1000 or more!");
-
-					// Check if ISA is already open
-					Accounts::Savings* ISA = NULL;
-
-					for (auto account : openedAccounts) {
-
-						// Try to downcast
-						if (ISA = dynamic_cast<Accounts::Savings*>(account)) {
-
-							// Check if savings account is ISA
-							if ((*ISA).isISA()) {
-								ISA = (Accounts::Savings*)account;
-								break;
-							}
-						}
-						
-						ISA = NULL;
-					}
-
-					if (ISA) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
-				}
-				
-				// ID of next account
-				long newID = openedAccounts.size() + 1;
-
 				// Open account and save it to lastSelected
 				switch (type)
 				{
-					case (1):
-						openedAccounts.push_back(lastSelectedAccount = new Accounts::Current(newID, openingBalance));
-						std::cout << "Current account created!" << std::endl;
-						break;
+				case (1):
+					lastSelectedAccount = accountFactory.CreateRegularAccount(openingBalance);
+					std::cout << "Current account created!" << std::endl;
+					break;
 
-					case (2):
-						openedAccounts.push_back(lastSelectedAccount = new Accounts::Savings(newID, openingBalance));
-						std::cout << "Savings account created!" << std::endl;
-						break;
+				case (2):
+					lastSelectedAccount = accountFactory.CreateSavingsAccount(openingBalance);
+					std::cout << "Savings account created!" << std::endl;
+					break;
 
-					case (3):
-						openedAccounts.push_back(lastSelectedAccount = new Accounts::Savings(newID, openingBalance, true));
-						std::cout << "ISA account created!" << std::endl;
-						break;
+				case (3):
+					lastSelectedAccount = accountFactory.CreateISAAccount(openingBalance);
+					std::cout << "ISA account created!" << std::endl;
+					break;
 
-					default:
-						throw Exceptions::IncorrectArgumentValue("Only 1-3 values are available!");
+				default:
+					throw Exceptions::IncorrectArgumentValue("Only 1-3 values are available!");
 				}
 			}
 
@@ -151,22 +119,22 @@ int main()
 				if (parameters.size() > 2) throw Exceptions::IncorrectAmountOfArguments();
 
 				// Check if any accounts are open
-				if (openedAccounts.size() == 0) throw Exceptions::IncorrectArgumentValue("No accounts exists!");
+				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No accounts exists!");
 
 				// display all accounts if no index is provided
 				if (parameters.size() == 1)
 				{
-					for (auto acc : openedAccounts) 
+					for (const auto acc : accountFactory.GetAccounts()) 
 					{
 						// Print account info
-						std::cout << acc->toString() << std::endl;
+						std::cout << acc->toString() << "\n";
 
 						// Print last 10 transactions to avoid a lot of text
 						for (auto transaction : acc->getLastTransaction(10)) {
 							std::cout << transaction->toString();
 						}
 
-						std::cout << std::endl;
+						std::cout << "\n";
 					}
 				}
 
@@ -176,16 +144,16 @@ int main()
 					int index = InputParser::parse<int>(parameters[1]);
 
 					// Check if index is negative, negative bound and if it exists
-					if (index <= 0 || index-1 > index || openedAccounts.size() < index) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+					if (index <= 0 || index-1 > index || accountFactory.GetAmountOfAccounts() < index) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
 					// Save last select (don't care about overflow because of previous check)
-					lastSelectedAccount = openedAccounts[index-1];
+					lastSelectedAccount = accountFactory.GetAccountByIndex(index-1);
 
 					// Print data about account
 					std::cout << lastSelectedAccount->toString() << std::endl;
 
 					// Print last 10 transactions to avoid a lot of text
-					for (auto transaction : lastSelectedAccount->getLastTransaction(10)) {
+					for (const auto transaction : lastSelectedAccount->getLastTransaction(10)) {
 						std::cout << transaction->toString();
 					}
 				}
@@ -201,10 +169,10 @@ int main()
 				if (amount <= 0) throw Exceptions::IncorrectArgumentValue("Deposit or Withdraw amount should be more than 0!");
 
 				// Check if any accounts are open
-				if (openedAccounts.size() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
+				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
 				// If no selected account, select last
-				if (lastSelectedAccount == NULL) lastSelectedAccount = openedAccounts[openedAccounts.size() - 1];
+				if (lastSelectedAccount == NULL) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
 
 				// Withdraw funds from most recently viewed account
 				if (command.compare("withdraw") == 0) {
@@ -237,8 +205,8 @@ int main()
 				double sum = InputParser::parse<double>(parameters[3]);
 				
 				// Check if src and dest exists
-				if (src <= 0 || src - 1 > src || openedAccounts.size() < src) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
-				if (dest <= 0 || dest - 1 > dest || openedAccounts.size() < dest) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+				if (src <= 0 || src - 1 > src || accountFactory.GetAmountOfAccounts() < src) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+				if (dest <= 0 || dest - 1 > dest || accountFactory.GetAmountOfAccounts() < dest) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
 				if (src == dest) throw Exceptions::IncorrectArgumentValue("Source and destination adress should not be the same!");
 
@@ -249,15 +217,19 @@ int main()
 				src--;
 				dest--;
 
+				// Get accounts by index
+				Accounts::Account* sourceAccount = accountFactory.GetAccountByIndex(src);
+				Accounts::Account* destinationAccount = accountFactory.GetAccountByIndex(dest);
+
 				// Check if account is Current and overdraft is possible
 				double possibleOverdraft = 0;
-				if (Accounts::Current* current = dynamic_cast<Accounts::Current*>(openedAccounts[src])) possibleOverdraft = current->getOverdraft();
+				if (Accounts::Current* current = dynamic_cast<Accounts::Current*>(sourceAccount)) possibleOverdraft = current->getOverdraft();
 
 				// Check balance
-				if (sum > openedAccounts[src]->getBalance() + possibleOverdraft) throw Exceptions::IncorrectArgumentValue("Insufficient balance to perform operation!");
+				if (sum > sourceAccount->getBalance() + possibleOverdraft) throw Exceptions::IncorrectArgumentValue("Insufficient balance to perform operation!");
 
 				// Transfer funds between accounts
-				openedAccounts[src]->transfer(openedAccounts[dest], sum);
+				sourceAccount->transfer(destinationAccount, sum);
 			}
 
 			// Project balance forward in time
@@ -274,6 +246,10 @@ int main()
 				Accounts::Savings* saving = dynamic_cast<Accounts::Savings*>(lastSelectedAccount);
 
 				if (saving == NULL) {
+
+					// Get local copy of created accounts
+					std::vector<Accounts::Account*> openedAccounts = accountFactory.GetAccounts();
+
 					// Select last savings or ISA created account
 					for (std::vector<Accounts::Account*>::reverse_iterator it = openedAccounts.rbegin(); it != openedAccounts.rend(); it++) {
 						if (saving = dynamic_cast<Accounts::Savings*>(*it)) {
@@ -298,10 +274,10 @@ int main()
 				long long time_stamp = InputParser::parse<std::time_t>(parameters[3] + parameters[4]);
 
 				// Check if any accounts are open
-				if (openedAccounts.size() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
+				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
 				// If no selected account, select last
-				if (lastSelectedAccount == NULL) lastSelectedAccount = openedAccounts[openedAccounts.size() - 1];
+				if (lastSelectedAccount == NULL) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
 
 				// Find particular transaction
 				if (Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount))) {

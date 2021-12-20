@@ -12,7 +12,7 @@ namespace Exceptions {
 	public:
 		IncorrectArgumentValue();
 		IncorrectArgumentValue(std::string message);
-		~IncorrectArgumentValue();
+		~IncorrectArgumentValue() override;
 	};
 }
 

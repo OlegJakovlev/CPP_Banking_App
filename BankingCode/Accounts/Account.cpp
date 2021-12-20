@@ -49,7 +49,7 @@ namespace Accounts {
 
 	Transaction* Account::searchTransaction(std::string key)
 	{
-		return history[key];
+		return history.at(key);
 	}
 
 	void Account::addTransaction(Transaction::transactionType type, double amount, std::string description) {
