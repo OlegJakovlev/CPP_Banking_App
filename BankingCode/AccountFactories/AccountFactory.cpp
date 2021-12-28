@@ -7,6 +7,8 @@ namespace AccountFactories {
 
 	AccountFactory::~AccountFactory()
 	{
+		// Why openedAccounts are automatically dealocated?
+
 		openedAccounts.clear();
 		openedAccounts.shrink_to_fit();
 	}
@@ -26,17 +28,17 @@ namespace AccountFactories {
 		return openedAccounts[GetAmountOfAccounts()];
 	}
 
-	Accounts::Account* const AccountFactory::GetAccountByIndex(const int& index) const
+	Accounts::Account* const AccountFactory::GetAccountByIndex(const int index) const
 	{
 		try {
 			return openedAccounts.at(index);
 		}
 		catch (std::out_of_range) {
-			return NULL;
+			return nullptr;
 		}
 	}
 
-	Accounts::Account* const AccountFactory::CreateRegularAccount(const double& openingBalance, double newOverdraft)
+	Accounts::Account* const AccountFactory::CreateRegularAccount(const double openingBalance, const double newOverdraft)
 	{
 		if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
 
@@ -47,7 +49,7 @@ namespace AccountFactories {
 		return newAccount;
 	}
 
-	Accounts::Account* const AccountFactory::CreateSavingsAccount(const double& openingBalance)
+	Accounts::Account* const AccountFactory::CreateSavingsAccount(const double openingBalance)
 	{
 		if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
 
@@ -58,12 +60,12 @@ namespace AccountFactories {
 		return newAccount;
 	}
 
-	Accounts::Account* const AccountFactory::CreateISAAccount(const double& openingBalance)
+	Accounts::Account* const AccountFactory::CreateISAAccount(const double openingBalance)
 	{
 		if (openingBalance < 1000) throw Exceptions::IncorrectArgumentValue("ISA accounts require opening balance of 1000 or more!");
 		
 		// Check if ISA is already open
-		Accounts::Savings* ISA = NULL;
+		Accounts::Savings* ISA = nullptr;
 
 		std::for_each(openedAccounts.begin(), openedAccounts.end(), [&](Accounts::Account* account) {
 
@@ -77,7 +79,7 @@ namespace AccountFactories {
 				}
 			}
 
-			ISA = NULL;
+			ISA = nullptr;
 		});
 
 		if (ISA) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");

@@ -1,37 +1,49 @@
 #include "Account.h"
 
 namespace Accounts {
-	Account::Account(const long& newID, const double& amount) {
+	Account::Account(const long newID, const double amount) {
 		id = newID;
 		balance = amount;
 		addTransaction(Transaction::transactionType::open_deposit, amount);
 	}
 
 	Account::~Account() {
+		// Deallocate all pointers of transactions
+		std::map<std::string, const Transaction*>::const_iterator it = history.cbegin();
 
+		while (it != history.cend()) {
+			delete it->second;
+			it = history.erase(it);
+		}
 	}
 
-	void Account::deposit(const double& amount) {
+	void Account::deposit(const double amount,
+		const Transaction::transactionType& type,
+		const std::string successfulMessage,
+		const std::string transactionDescription
+	) {
 		balance += amount;
-		addTransaction(Transaction::transactionType::deposit, amount);
-		std::cout << "Successfully deposited the money!" << std::endl;
+		addTransaction(type, amount, transactionDescription);
+		if (successfulMessage != "") std::cout << successfulMessage << "\n";
 	}
 
-	void Account::withdraw(const double& amount) {
+	void Account::withdraw(const double amount,
+		const Transaction::transactionType& type,
+		const std::string successfulMessage,
+		const std::string transactionDescription
+	) {
 		balance -= amount;
-		addTransaction(Transaction::transactionType::withdraw, amount);
-		std::cout << "Successfully withdrawn the money!" << std::endl;
+		addTransaction(type, amount, transactionDescription);
+		if (successfulMessage != "") std::cout << successfulMessage << "\n";
 	}
 
-	void Account::transfer(Account* destination, const double& amount) {
-		balance -= amount;
-		(*destination).balance += amount;
-		
-		// Create transaction for each of accounts with different descriptions
-		addTransaction(Transaction::transactionType::transfer, amount, "Transfer to " + std::to_string((*destination).getID()));
-		(*destination).addTransaction(Transaction::transactionType::transfer, amount, "Transfer from " + std::to_string(getID()));
+	void Account::transfer(Account* destination, const double amount) {
 
-		std::cout << "Money transfer successful!" << std::endl;
+		// Create transfer transaction with custom description by using withdraw and deposit functions
+		withdraw(amount, Transaction::transactionType::transfer, "", "Transfer to " + std::to_string((*destination).getID()));
+		(*destination).deposit(amount, Transaction::transactionType::transfer, "", "Transfer from " + std::to_string(getID()));
+
+		std::cout << "Money transfer successful!" << "\n";
 	}
 
 	double Account::getBalance() const {
@@ -50,32 +62,29 @@ namespace Accounts {
 			+ std::to_string(balance).substr(0, std::to_string(balance).find(".") + 3));
 	}
 
-	const Transaction* const Account::searchTransaction(const std::string& key) const
+	const std::vector<const Transaction*> const Account::searchTransaction(const std::string key) const
 	{
-		try {
-			return history.at(key);
+		std::vector<const Transaction*> result;
+
+		for (std::multimap<std::string, const Transaction*>::const_iterator it = history.find(key); it != history.cend(); it++) {
+			result.push_back((*it).second);
 		}
-		catch (std::out_of_range) {
-			return NULL;
-		}
+
+		return result;
 	}
 
-	void Account::addTransaction(const Transaction::transactionType& type, const double& amount, std::string description) {
+	void Account::addTransaction(const Transaction::transactionType& type, const double amount, const std::string description) {
 		// Concatenate the key
 		std::string key = std::to_string(std::time(0)) +
 			std::to_string((int)type) +
 			std::to_string(amount);
 
-		// Check if same transaction exists
-		if (searchTransaction(key)) throw Exceptions::IncorrectArgumentValue("You are so fast! Same operation in 1 second are prohibited!");
-
 		Transaction* const newTransaction = new Transaction(type, amount, description);
 
-		// Red-Black Tree solution
-		history[key] = newTransaction;
+		history.insert({ key, newTransaction });
 	}
 
-	const std::vector<const Transaction*> Account::getLastTransaction(const int& amount) const
+	const std::vector<const Transaction*> Account::getLastTransaction(const int amount) const
 	{
 		std::vector<const Transaction*> result;
 

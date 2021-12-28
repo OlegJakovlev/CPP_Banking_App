@@ -15,7 +15,7 @@ static class InputParser
 {
 public:
 	template <typename T>
-	static T parse(const std::string& toParse);
+	static T parse(const std::string toParse);
 };
 
 #endif

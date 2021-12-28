@@ -1,7 +1,7 @@
 #include "InputParser.h"
 
 template <>
-unsigned InputParser::parse<unsigned>(const std::string& toParse) {
+unsigned InputParser::parse<unsigned>(const std::string toParse) {
 	try {
 		// Convert and record number of converted symbols
 		std::size_t amountOfConvertedSymbols;
@@ -21,7 +21,7 @@ unsigned InputParser::parse<unsigned>(const std::string& toParse) {
 }
 
 template <>
-int InputParser::parse<int>(const std::string& toParse) {
+int InputParser::parse<int>(const std::string toParse) {
 	try {
 		// Convert and record number of converted symbols
 		std::size_t amountOfConvertedSymbols;
@@ -41,7 +41,7 @@ int InputParser::parse<int>(const std::string& toParse) {
 }
 
 template <>
-float InputParser::parse<float>(const std::string& toParse) {
+float InputParser::parse<float>(const std::string toParse) {
 	try {
 		// Convert and record number of converted symbols
 		std::size_t amountOfConvertedSymbols;
@@ -61,7 +61,7 @@ float InputParser::parse<float>(const std::string& toParse) {
 }
 
 template <>
-double InputParser::parse<double>(const std::string& toParse) {
+double InputParser::parse<double>(const std::string toParse) {
 	try {
 		// Convert and record number of converted symbols
 		std::size_t amountOfConvertedSymbols;
@@ -81,7 +81,7 @@ double InputParser::parse<double>(const std::string& toParse) {
 }
 
 template <>
-long InputParser::parse<long>(const std::string& toParse) {
+long InputParser::parse<long>(const std::string toParse) {
 	try {
 		// Convert and record number of converted symbols
 		std::size_t amountOfConvertedSymbols;
@@ -101,7 +101,7 @@ long InputParser::parse<long>(const std::string& toParse) {
 }
 
 template <>
-long long InputParser::parse<std::time_t>(const std::string& toParse) {
+long long InputParser::parse<std::time_t>(const std::string toParse) {
 	// Initialize tmp variables
 	std::tm time = { 0 };
 	std::istringstream date(toParse);

@@ -28,10 +28,10 @@ namespace AccountFactories {
 		const int GetAmountOfAccounts() const;
 		const std::vector <Accounts::Account*>& GetAccounts() const;
 		Accounts::Account* const GetLastCreatedAccount() const;
-		Accounts::Account* const GetAccountByIndex(const int& index) const;
-		Accounts::Account* const CreateRegularAccount(const double& openingBalance, double newOverdraft = 500.00);
-		Accounts::Account* const CreateSavingsAccount(const double& openingBalance);
-		Accounts::Account* const CreateISAAccount(const double& openingBalance);
+		Accounts::Account* const GetAccountByIndex(const int index) const;
+		Accounts::Account* const CreateRegularAccount(const double openingBalance, const double newOverdraft = 500.00);
+		Accounts::Account* const CreateSavingsAccount(const double openingBalance);
+		Accounts::Account* const CreateISAAccount(const double openingBalance);
 	};
 }
 

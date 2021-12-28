@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Transaction.h"
 
-Transaction::Transaction(const transactionType& type, const double& newValue, std::string newDescription) {
+Transaction::Transaction(const transactionType& type, const double newValue, const std::string newDescription) {
 	if (newDescription == "") {
 		switch ((int)type) {
 		case 0:

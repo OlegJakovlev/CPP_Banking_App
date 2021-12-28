@@ -1,4 +1,12 @@
+# Build results
 bin/
 obj/
 x64/
 Release/
+Debug/
+
+# Custom compilation resulsts
+*.obj
+*.exe
+
+*.vcxproj

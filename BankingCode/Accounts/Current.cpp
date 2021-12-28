@@ -1,7 +1,7 @@
 #include "Current.h"
 
 namespace Accounts {
-	Current::Current(const long& newID, const double& newBalance, double newOverdraft) : Accounts::Account(newID, newBalance) {
+	Current::Current(const long newID, const double newBalance, const double newOverdraft) : Accounts::Account(newID, newBalance) {
 		accountName = "Current";
 		overdraft = newOverdraft;
 		initialOverdraft = newOverdraft;
@@ -13,12 +13,16 @@ namespace Accounts {
 		return overdraft;
 	}
 
-	void Current::withdraw(const double& amount) {
+	void Current::withdraw(const double amount,
+		const Transaction::transactionType& type,
+		const std::string successfulMessage,
+		const std::string transactionDescription
+	) {
 		// Check if overdraft should be used
 		double difference = amount - balance;
 
 		// Create transaction record
-		addTransaction(Transaction::transactionType::withdraw, amount);
+		addTransaction(type, amount, transactionDescription);
 
 		if (difference > 0) {
 			overdraft -= difference;
@@ -30,15 +34,19 @@ namespace Accounts {
 			balance -= amount;
 		}
 		
-		std::cout << "Successfully withdrawn the money!" << std::endl;
+		if (successfulMessage != "") std::cout << successfulMessage << "\n";
 	}
 
-	void Current::deposit(const double& amount) {
+	void Current::deposit(const double amount,
+		const Transaction::transactionType& type,
+		const std::string successfulMessage,
+		const std::string transactionDescription
+	) {
 		// Check if overdraft was used
 		double overdraftUsed = initialOverdraft - overdraft;
 
 		// Create transaction record
-		addTransaction(Transaction::transactionType::deposit, amount);
+		addTransaction(type, amount, transactionDescription);
 
 		// Check if overdraft was used
 		if (overdraftUsed > 0) {
@@ -58,8 +66,7 @@ namespace Accounts {
 			balance += amount;
 		}
 
-		// Add to balance
-		std::cout << "Successfully deposited the money!" << std::endl;
+		if (successfulMessage != "") std::cout << successfulMessage << "\n";
 	}
 
 	const std::string Current::toString() const

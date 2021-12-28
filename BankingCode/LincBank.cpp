@@ -18,15 +18,27 @@
 
 void printOptions()
 {
-	std::cout << "options / help / ?: view these options again\n" << std::endl;
-	std::cout << "open type initial_deposit: open an account\n\t{ Type -> Current (1), Savings (2) or ISA (3) }\n" << std::endl;
-	std::cout << "view [index]: view balance and recent transactions\n\t{ *Index - optional, starting from 1 }\n" << std::endl;
-	std::cout << "withdraw sum: withdraw funds from most recently viewed account\n" << std::endl;
-	std::cout << "deposit sum: deposit funds into most recently viewed account\n" << std::endl;
-	std::cout << "transfer src dest sum: transfer funds between accounts\n" << std::endl;
-	std::cout << "project years: project balance forward in time\n" << std::endl;
-	std::cout << "search type amount timestamp: find transaction by following parametrs\n\t{ Type -> Initial Deposit (0), Deposit (1), Withdraw (2), Transfer (3) }\n\t{ Timestamp -> HH:MM:SS DD/MM/YYYY }\n" << std::endl;
-	std::cout << "exit: close this application" << std::endl;
+	std::cout << "options / help / ?: view these options again" << "\n\n";
+	
+	std::cout << "open type initial_deposit: open an account " << "\n\t"
+		<< "{ Type -> Current (1), Savings (2) or ISA (3) }" << "\n\n";
+
+	std::cout << "view [index]: view balance and recent transactions" 
+		<< "\n\t" << "{ *Index - optional, starting from 1 }" << "\n\n";
+	
+	std::cout << "withdraw sum: withdraw funds from most recently viewed account" << "\n\n";
+
+	std::cout << "deposit sum: deposit funds into most recently viewed account" << "\n\n";
+	
+	std::cout << "transfer source_index destination_index sum: transfer funds between accounts" << "\n\n";
+	
+	std::cout << "project years: project balance forward in time" << "\n\n";
+
+	std::cout << "search type amount timestamp: find transaction by following parametrs" << "\n\t" 
+		<< "{ Type -> Initial Deposit (0), Deposit (1), Withdraw (2), Transfer (3) }" << "\n\t"
+		<< "{ Timestamp -> HH:MM:SS DD/MM/YYYY }" << "\n\n";
+	
+	std::cout << "exit: close this application" << "\n";
 }
 
 int main()
@@ -35,16 +47,16 @@ int main()
 	std::string userCommand;
 
 	AccountFactories::AccountFactory accountFactory;
-	Accounts::Account* lastSelectedAccount = NULL;
+	Accounts::Account* lastSelectedAccount = nullptr;
 
-	std::cout << "~~~ Welcome to LincBank! ~~~" << std::endl;
+	std::cout << "~~~ Welcome to LincBank! ~~~\n";
 	printOptions();
 
 	while (userCommand != "exit")
 	{
 		// clear ready for next command
 		parameters.clear(); 
-		std::cout << std::endl << ">>> ";
+		std::cout << "\n>>> ";
 
 		// Extract and store input
 		std::getline(std::cin, userCommand);
@@ -58,10 +70,10 @@ int main()
 		token = strtok(cstr, " ");
 
 		// Save each input parametr
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			parameters.push_back(token);
-			token = strtok(NULL, " ");
+			token = strtok(nullptr, " ");
 		}
 
 		std::string command = "";
@@ -109,17 +121,17 @@ int main()
 				{
 				case (1):
 					lastSelectedAccount = accountFactory.CreateRegularAccount(openingBalance);
-					std::cout << "Current account created!" << std::endl;
+					std::cout << "Current account created!\n";
 					break;
 
 				case (2):
 					lastSelectedAccount = accountFactory.CreateSavingsAccount(openingBalance);
-					std::cout << "Savings account created!" << std::endl;
+					std::cout << "Savings account created!\n";
 					break;
 
 				case (3):
 					lastSelectedAccount = accountFactory.CreateISAAccount(openingBalance);
-					std::cout << "ISA account created!" << std::endl;
+					std::cout << "ISA account created!\n";
 					break;
 
 				default:
@@ -159,20 +171,18 @@ int main()
 					Accounts::Account* tmpAccount = accountFactory.GetAccountByIndex(index - 1);
 
 					// Check if exists
-					if (tmpAccount == NULL) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+					if (tmpAccount == nullptr) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
 					// Update last selected account
 					lastSelectedAccount = tmpAccount;
 
 					// Print data about account
-					std::cout << lastSelectedAccount->toString() << std::endl;
+					std::cout << lastSelectedAccount->toString() << "\n";
 
 					// Print all transactions
 					for (const auto transaction : lastSelectedAccount->getAllTransaction()) {
 						std::cout << transaction->toString();
 					}
-
-					delete tmpAccount;
 				}
 			}
 
@@ -186,7 +196,7 @@ int main()
 				const int dotPos = parameters[1].find(".");
 				if (dotPos != std::string::npos) {
 					if (parameters[1].size() - dotPos > 3) {
-						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+						throw Exceptions::IncorrectArgumentValue("Please provide correct withdraw/deposit amount!");
 					}
 				}
 
@@ -197,7 +207,7 @@ int main()
 				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
 				// If no selected account, select last
-				if (lastSelectedAccount == NULL) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
+				if (lastSelectedAccount == nullptr) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
 
 				// Withdraw funds from most recently viewed account
 				if (command.compare("withdraw") == 0) {
@@ -233,7 +243,7 @@ int main()
 				const int dotPos = parameters[3].find(".");
 				if (dotPos != std::string::npos) {
 					if (parameters[3].size() - dotPos > 3) {
-						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+						throw Exceptions::IncorrectArgumentValue("Please provide correct transfering amount!");
 					}
 				}
 				
@@ -242,7 +252,7 @@ int main()
 				Accounts::Account* destinationAccount = accountFactory.GetAccountByIndex(dest-1);
 
 				// Check if exists
-				if (sourceAccount == NULL || destinationAccount == NULL) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+				if (sourceAccount == nullptr || destinationAccount == nullptr) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
 				// Check if same account is selected
 				if (src == dest) throw Exceptions::IncorrectArgumentValue("Source and destination adress should not be the same!");
@@ -274,7 +284,7 @@ int main()
 				// Check if last selected is not savings account
 				Accounts::Savings* saving = dynamic_cast<Accounts::Savings*>(lastSelectedAccount);
 
-				if (saving == NULL) {
+				if (saving == nullptr) {
 
 					// Get local copy of unmodifiable created accounts
 					std::vector<Accounts::Account*> openedAccounts = accountFactory.GetAccounts();
@@ -291,13 +301,10 @@ int main()
 				}
 
 				// Check if no saving account created yet
-				if (saving == NULL) throw Exceptions::IncorrectArgumentTypes("No Regular Saving or ISA account(-s) were found!");
+				if (saving == nullptr) throw Exceptions::IncorrectArgumentTypes("No Regular Saving or ISA account(-s) were found!");
 
 				// Calculate and print
-				std::cout << (*saving).computeInterest(amountOfYears) << std::endl;
-
-				// Deallocate pointer
-				delete saving;
+				std::cout << (*saving).computeInterest(amountOfYears) << "\n";
 			}
 
 			else if (command.compare("search") == 0)
@@ -320,17 +327,34 @@ int main()
 				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
 				// If no selected account, select last
-				if (lastSelectedAccount == NULL) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
+				if (lastSelectedAccount == nullptr) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
 
-				// Find particular transaction
-				if (const Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount))) {
+				bool anyTransactionsFound = false;
+				std::vector<const Transaction*> transactions;
+
+				// Try to find particular transactions for all accounts
+				for (const Accounts::Account* account : accountFactory.GetAccounts()) {
 					
-					// Print all the data related to transaction
-					std::cout << (*transaction).toString();
+					// Get transactions for each account
+					transactions = account->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount));
+
+					// Nothing was found
+					if (transactions.size() == 0) continue;
+					anyTransactionsFound = true;
+
+					// Print account data and appoporiate transactions
+					std::cout << account->toString() << "\n";
+
+					for (auto transaction : transactions) {
+						// Print all the data related to transaction
+						std::cout << (*transaction).toString();
+					}
+
+					std::cout << "\n";
 				}
-				else {
-					throw Exceptions::IncorrectArgumentTypes("No provided transaction was found!");
-				}
+				
+				// If nothing found throw exception
+				if (!anyTransactionsFound) throw Exceptions::IncorrectArgumentTypes("No provided transaction was found!");
 			}
 
 			else if (command.compare("exit") == 0)
@@ -340,7 +364,7 @@ int main()
 
 			else
 			{
-				std::cout << '"' << command << '"' << " is not recognized as an internal or external command. Type 'options' / 'help' / '?' for list of options." << std::endl;
+				std::cout << '"' << command << '"' << " is not recognized as an internal or external command. Type 'options' / 'help' / '?' for list of options." << "\n";
 			}
 		}
 		catch (Exceptions::IncorrectAmountOfArguments) {

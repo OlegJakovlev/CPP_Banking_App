@@ -1,7 +1,7 @@
 #include "Savings.h"
 
 namespace Accounts {
-	Savings::Savings(const long& newID, const double& openingBalance, bool isIsa) : Accounts::Account(newID, openingBalance) {
+	Savings::Savings(const long newID, const double openingBalance, bool isIsa) : Accounts::Account(newID, openingBalance) {
 		accountName = "Savings";
 
 		if (isIsa) {
@@ -17,7 +17,7 @@ namespace Accounts {
 		return isa;
 	}
 
-	const double Savings::computeInterest(const double& years) const {
+	const double Savings::computeInterest(const double years) const {
 		return InterestEarning::computeInterest(balance, interestRate, years);
 	}
 }
