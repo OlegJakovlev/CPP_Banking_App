@@ -1,29 +1,29 @@
 #include "Account.h"
 
 namespace Accounts {
-	Account::Account(long newID, double amount) {
+	Account::Account(const long& newID, const double& amount) {
 		id = newID;
 		balance = amount;
 		addTransaction(Transaction::transactionType::open_deposit, amount);
 	}
 
 	Account::~Account() {
-		delete & history;
+
 	}
 
-	void Account::deposit(double amount) {
+	void Account::deposit(const double& amount) {
 		balance += amount;
 		addTransaction(Transaction::transactionType::deposit, amount);
 		std::cout << "Successfully deposited the money!" << std::endl;
 	}
 
-	void Account::withdraw(double amount) {
+	void Account::withdraw(const double& amount) {
 		balance -= amount;
 		addTransaction(Transaction::transactionType::withdraw, amount);
 		std::cout << "Successfully withdrawn the money!" << std::endl;
 	}
 
-	void Account::transfer(Account* destination, double amount) {
+	void Account::transfer(Account* destination, const double& amount) {
 		balance -= amount;
 		(*destination).balance += amount;
 		
@@ -34,48 +34,76 @@ namespace Accounts {
 		std::cout << "Money transfer successful!" << std::endl;
 	}
 
-	double Account::getBalance() {
+	double Account::getBalance() const {
 		return balance;
 	}
 
-	long Account::getID()
+	long Account::getID() const
 	{
 		return id;
 	}
 
-	std::string Account::toString() {
-		return ("ID: " + std::to_string(id) + " | Type: " + accountName + " | Balance: $" + std::to_string(balance));
+	const std::string Account::toString() const {
+		return ("ID: " + std::to_string(id) 
+			+ " | Type: " + accountName 
+			+ " | Balance: $"
+			+ std::to_string(balance).substr(0, std::to_string(balance).find(".") + 3));
 	}
 
-	Transaction* Account::searchTransaction(std::string key)
+	const Transaction* const Account::searchTransaction(const std::string& key) const
 	{
-		return history.at(key);
+		try {
+			return history.at(key);
+		}
+		catch (std::out_of_range) {
+			return NULL;
+		}
 	}
 
-	void Account::addTransaction(Transaction::transactionType type, double amount, std::string description) {
-		Transaction* newTransaction = new Transaction(type, amount, description);
+	void Account::addTransaction(const Transaction::transactionType& type, const double& amount, std::string description) {
+		// Concatenate the key
+		std::string key = std::to_string(std::time(0)) +
+			std::to_string((int)type) +
+			std::to_string(amount);
+
+		// Check if same transaction exists
+		if (searchTransaction(key)) throw Exceptions::IncorrectArgumentValue("You are so fast! Same operation in 1 second are prohibited!");
+
+		Transaction* const newTransaction = new Transaction(type, amount, description);
 
 		// Red-Black Tree solution
-		history[
-			std::to_string(std::time(0))+
-				std::to_string((int)type) +
-				std::to_string(amount)
-		] = newTransaction;
+		history[key] = newTransaction;
 	}
 
-	std::vector<Transaction*> Account::getLastTransaction(int amount)
+	const std::vector<const Transaction*> Account::getLastTransaction(const int& amount) const
 	{
-		std::vector<Transaction*> result;
+		std::vector<const Transaction*> result;
 
 		// Initialize start and end pointers
-		std::map<std::string, Transaction*>::reverse_iterator it = history.rbegin();
-		std::map<std::string, Transaction*>::reverse_iterator end_it  = it;
+		std::map<std::string, const Transaction*>::const_reverse_iterator it = history.crbegin();
+		std::map<std::string, const Transaction*>::const_reverse_iterator end_it  = it;
 		
 		// Iterate throught and get last memory adress possible / need
 		std::advance(end_it, (amount > history.size()) ? history.size() : amount);
 
 		// Iterate throught and save transactions
-		for (; it != end_it; ++it) {
+		for (; it != end_it; it++) {
+			result.push_back(it->second);
+		}
+
+		return result;
+	}
+
+	const std::vector<const Transaction*> Account::getAllTransaction() const
+	{
+		std::vector<const Transaction*> result;
+
+		// Initialize start and end pointers
+		std::map<std::string, const Transaction*>::const_reverse_iterator it = history.crbegin();
+		std::map<std::string, const Transaction*>::const_reverse_iterator end_it = history.crend();
+
+		// Iterate throught and save transactions
+		for (; it != end_it; it++) {
 			result.push_back(it->second);
 		}
 

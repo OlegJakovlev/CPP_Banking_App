@@ -16,28 +16,33 @@ namespace Accounts {
 	protected:
 		long id;
 		double balance;
-		std::map<std::string, Transaction*> history; // Dictionary [key]=value (Red-black tree)
+		std::map<std::string, const Transaction*> history;
 		std::string accountName;
 
 	protected:
-		virtual void addTransaction(Transaction::transactionType type, double amount, std::string description = "");
+		virtual void addTransaction(const Transaction::transactionType& type, const double& amount, std::string description = "");
 
 	public:
-		Account(long newID, double amount);
-		virtual ~Account();
+		Account(const long& newID, const double& amount); // 0/5: Default Ctor
+		Account(const Account&) = default; // 1/5: Copy Ctor
+		Account(Account&&) noexcept = default; // 2/5: Move Ctor
+		Account& operator=(const Account&) = default; // 3/5: Copy Assignment
+		Account& operator=(Account&&) noexcept = default; // 4/5: Move Assignment
+		virtual ~Account(); // 5/5: Dtor
 
 	public:
-		virtual double getBalance();
-		virtual long getID();
+		virtual double getBalance() const;
+		virtual long getID() const;
 
-		virtual void deposit(double amount);
-		virtual void withdraw(double amount);
-		virtual void transfer(Account* destination, double amount);
+		virtual void deposit(const double& amount);
+		virtual void withdraw(const double& amount);
+		virtual void transfer(Account* destination, const double& amount);
 
-		virtual std::string toString();
+		virtual const std::string toString() const;
 
-		virtual Transaction* searchTransaction(std::string key);
-		virtual std::vector<Transaction*> getLastTransaction(int amount);
+		virtual const Transaction* const searchTransaction(const std::string& key) const;
+		virtual const std::vector<const Transaction*> getLastTransaction(const int& amount) const;
+		virtual const std::vector<const Transaction*> getAllTransaction() const;
 	};
 }
 

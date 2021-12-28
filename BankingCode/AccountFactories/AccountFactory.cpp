@@ -7,51 +7,58 @@ namespace AccountFactories {
 
 	AccountFactory::~AccountFactory()
 	{
-		delete &openedAccounts;
+		openedAccounts.clear();
+		openedAccounts.shrink_to_fit();
 	}
 
-	int AccountFactory::GetAmountOfAccounts()
+	const int AccountFactory::GetAmountOfAccounts() const
 	{
 		return newID - 1;
 	}
 
-	std::vector<Accounts::Account*> AccountFactory::GetAccounts()
+	const std::vector<Accounts::Account*>& AccountFactory::GetAccounts() const
 	{
 		return openedAccounts;
 	}
 
-	Accounts::Account* AccountFactory::GetLastCreatedAccount()
+	Accounts::Account* const AccountFactory::GetLastCreatedAccount() const
 	{
 		return openedAccounts[GetAmountOfAccounts()];
 	}
 
-	Accounts::Account* AccountFactory::GetAccountByIndex(int index)
+	Accounts::Account* const AccountFactory::GetAccountByIndex(const int& index) const
 	{
-		return openedAccounts[index];
+		try {
+			return openedAccounts.at(index);
+		}
+		catch (std::out_of_range) {
+			return NULL;
+		}
 	}
 
-	Accounts::Account* AccountFactory::CreateRegularAccount(double openingBalance, double newOverdraft)
+	Accounts::Account* const AccountFactory::CreateRegularAccount(const double& openingBalance, double newOverdraft)
 	{
 		if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
 
 		// Create new account and add to the list
-		Accounts::Account* newAccount = new Accounts::Current(newID++, openingBalance, newOverdraft);
+		Accounts::Account* const newAccount = new Accounts::Current(newID++, openingBalance, newOverdraft);
 		openedAccounts.push_back(newAccount);
 		
 		return newAccount;
 	}
 
-	Accounts::Account* AccountFactory::CreateSavingsAccount(double openingBalance)
+	Accounts::Account* const AccountFactory::CreateSavingsAccount(const double& openingBalance)
 	{
 		if (openingBalance < 0) throw Exceptions::IncorrectArgumentValue("All accounts require opening balance of 0 or more!");
 
-		Accounts::Account* newAccount = new Accounts::Savings(newID++, openingBalance);
+		// Create new account and add to the list
+		Accounts::Account* const newAccount = new Accounts::Savings(newID++, openingBalance);
 		openedAccounts.push_back(newAccount);
 
 		return newAccount;
 	}
 
-	Accounts::Account* AccountFactory::CreateISAAccount(double openingBalance)
+	Accounts::Account* const AccountFactory::CreateISAAccount(const double& openingBalance)
 	{
 		if (openingBalance < 1000) throw Exceptions::IncorrectArgumentValue("ISA accounts require opening balance of 1000 or more!");
 		
@@ -75,7 +82,7 @@ namespace AccountFactories {
 
 		if (ISA) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
 
-		Accounts::Account* newAccount = new Accounts::Savings(newID++, openingBalance, true);
+		Accounts::Account* const newAccount = new Accounts::Savings(newID++, openingBalance, true);
 		openedAccounts.push_back(newAccount);
 
 		return newAccount;

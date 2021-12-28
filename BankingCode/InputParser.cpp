@@ -1,14 +1,16 @@
 #include "InputParser.h"
 
-template <typename T>
-T InputParser::parse(std::string toParse) {
-	throw Exceptions::IncorrectArgumentTypes("No parsing rule exists!");
-}
-
 template <>
-unsigned InputParser::parse<unsigned>(std::string toParse) {
+unsigned InputParser::parse<unsigned>(const std::string& toParse) {
 	try {
-		return stoul(toParse);
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stoul(toParse, &amountOfConvertedSymbols);
+
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+
+		return result;
 	}
 	catch (const std::invalid_argument) {
 		throw Exceptions::IncorrectArgumentTypes();
@@ -19,9 +21,16 @@ unsigned InputParser::parse<unsigned>(std::string toParse) {
 }
 
 template <>
-int InputParser::parse<int>(std::string toParse) {
+int InputParser::parse<int>(const std::string& toParse) {
 	try {
-		return stoi(toParse);
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stoi(toParse, &amountOfConvertedSymbols);
+
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+
+		return result;
 	}
 	catch (const std::invalid_argument) {
 		throw Exceptions::IncorrectArgumentTypes();
@@ -32,9 +41,16 @@ int InputParser::parse<int>(std::string toParse) {
 }
 
 template <>
-float InputParser::parse<float>(std::string toParse) {
+float InputParser::parse<float>(const std::string& toParse) {
 	try {
-		return stof(toParse);
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stof(toParse, &amountOfConvertedSymbols);
+
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+
+		return result;
 	}
 	catch (const std::invalid_argument) {
 		throw Exceptions::IncorrectArgumentTypes();
@@ -45,9 +61,16 @@ float InputParser::parse<float>(std::string toParse) {
 }
 
 template <>
-double InputParser::parse<double>(std::string toParse) {
+double InputParser::parse<double>(const std::string& toParse) {
 	try {
-		return stod(toParse);
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stod(toParse, &amountOfConvertedSymbols);
+		
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+
+		return result;
 	}
 	catch (const std::invalid_argument) {
 		throw Exceptions::IncorrectArgumentTypes();
@@ -58,9 +81,16 @@ double InputParser::parse<double>(std::string toParse) {
 }
 
 template <>
-long InputParser::parse<long>(std::string toParse) {
+long InputParser::parse<long>(const std::string& toParse) {
 	try {
-		return stol(toParse);
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stol(toParse, &amountOfConvertedSymbols);
+
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+		
+		return result;
 	}
 	catch (const std::invalid_argument) {
 		throw Exceptions::IncorrectArgumentTypes();
@@ -71,7 +101,7 @@ long InputParser::parse<long>(std::string toParse) {
 }
 
 template <>
-long long InputParser::parse<std::time_t>(std::string toParse) {
+long long InputParser::parse<std::time_t>(const std::string& toParse) {
 	// Initialize tmp variables
 	std::tm time = { 0 };
 	std::istringstream date(toParse);

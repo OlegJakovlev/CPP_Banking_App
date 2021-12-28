@@ -1,5 +1,5 @@
 #include "InterestEarning.h"
 
-double InterestEarning::computeInterest(double initialBalance, double interestRate, double years, int interestApplied) {
+const double InterestEarning::computeInterest(const double& initialBalance, const double& interestRate, const double& years, int interestApplied) const {
 	return initialBalance * pow(1 + interestRate / interestApplied, interestApplied * years);
 }

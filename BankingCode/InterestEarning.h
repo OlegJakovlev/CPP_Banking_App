@@ -8,7 +8,7 @@
 class InterestEarning
 {
 public:
-	virtual double computeInterest(double initialBalance, double interestRate, double years, int interestApplied = 12);
+	virtual const double computeInterest(const double& initialBalance, const double& interestRate, const double& years, int interestApplied = 12) const;
 };
 
 #endif

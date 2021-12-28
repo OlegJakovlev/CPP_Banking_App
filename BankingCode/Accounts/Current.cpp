@@ -1,7 +1,7 @@
 #include "Current.h"
 
 namespace Accounts {
-	Current::Current(long newID, double newBalance, double newOverdraft) : Accounts::Account(newID, newBalance) {
+	Current::Current(const long& newID, const double& newBalance, double newOverdraft) : Accounts::Account(newID, newBalance) {
 		accountName = "Current";
 		overdraft = newOverdraft;
 		initialOverdraft = newOverdraft;
@@ -9,11 +9,11 @@ namespace Accounts {
 
 	Current::~Current() {}
 
-	double Current::getOverdraft() {
+	const double Current::getOverdraft() const {
 		return overdraft;
 	}
 
-	void Current::withdraw(double amount) {
+	void Current::withdraw(const double& amount) {
 		// Check if overdraft should be used
 		double difference = amount - balance;
 
@@ -23,35 +23,49 @@ namespace Accounts {
 		if (difference > 0) {
 			overdraft -= difference;
 
-			// Reduce amount by factor of used overdraft
-			amount -= difference;
+			// Substract from balance and increase by factor of used overdraft
+			balance -= amount - difference;
+		}
+		else {
+			balance -= amount;
 		}
 		
-		// Substract from balance
-		balance -= amount;
 		std::cout << "Successfully withdrawn the money!" << std::endl;
 	}
 
-	void Current::deposit(double amount) {
+	void Current::deposit(const double& amount) {
 		// Check if overdraft was used
-		double overdraftLeft = initialOverdraft - overdraft;
+		double overdraftUsed = initialOverdraft - overdraft;
 
 		// Create transaction record
 		addTransaction(Transaction::transactionType::deposit, amount);
 
-		// Reduce amount by factor of returned overdraft
-		if (amount >= overdraftLeft) {
-			overdraft += overdraftLeft;
-			amount -= overdraftLeft;
+		// Check if overdraft was used
+		if (overdraftUsed > 0) {
+
+			// If amount is bigger than used overdraft, cover the overdraft first
+			if (amount > overdraftUsed) {
+				overdraft += overdraftUsed;
+				balance += amount - overdraftUsed;
+			}
+
+			// If amount deposited is less than used, try to cover the overdraft
+			else {
+				overdraft += amount;
+			}
+		}
+		else {
+			balance += amount;
 		}
 
 		// Add to balance
-		balance += amount;
 		std::cout << "Successfully deposited the money!" << std::endl;
 	}
 
-	std::string Current::toString()
+	const std::string Current::toString() const
 	{
-		return Account::toString() + " | Overdraft available: $" + std::to_string(overdraft);
+		return Account::toString()
+			+ " | Overdraft available: $" 
+			+ std::to_string(overdraft).substr(0, std::to_string(overdraft).find(".") + 3);
 	}
 }

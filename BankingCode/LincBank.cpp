@@ -87,8 +87,22 @@ int main()
 				if (parameters.size() != 3) throw Exceptions::IncorrectAmountOfArguments();
 
 				// Parse values
-				unsigned type = InputParser::parse<unsigned>(parameters[1]);
-				double openingBalance = InputParser::parse<double>(parameters[2]);
+				const unsigned type = InputParser::parse<unsigned>(parameters[1]);
+				double initialOpeningBalance = InputParser::parse<double>(parameters[2]);
+
+				// Check if user entered more than decimal precision
+				const int dotPos = parameters[2].find(".");
+				if (dotPos != std::string::npos) {
+					if (parameters[2].size() - dotPos > 3) {
+						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+					}
+				}
+
+				// Check for -0 input
+				if ((initialOpeningBalance + 0.0) == 0.00) initialOpeningBalance = 0;
+
+				// Make opening balance const for security purposes
+				const double openingBalance = initialOpeningBalance;
 
 				// Open account and save it to lastSelected
 				switch (type)
@@ -124,14 +138,14 @@ int main()
 				// display all accounts if no index is provided
 				if (parameters.size() == 1)
 				{
-					for (const auto acc : accountFactory.GetAccounts()) 
+					for (const auto acc : accountFactory.GetAccounts())
 					{
 						// Print account info
 						std::cout << acc->toString() << "\n";
 
 						// Print last 10 transactions to avoid a lot of text
-						for (auto transaction : acc->getLastTransaction(10)) {
-							std::cout << transaction->toString();
+						for (const Transaction* transaction : acc->getLastTransaction(10)) {
+							std::cout << (*transaction).toString();
 						}
 
 						std::cout << "\n";
@@ -141,21 +155,24 @@ int main()
 				// Display an account according to an index (starting from 1)
 				else 
 				{
-					int index = InputParser::parse<int>(parameters[1]);
+					const int index = InputParser::parse<int>(parameters[1]);
+					Accounts::Account* tmpAccount = accountFactory.GetAccountByIndex(index - 1);
 
-					// Check if index is negative, negative bound and if it exists
-					if (index <= 0 || index-1 > index || accountFactory.GetAmountOfAccounts() < index) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+					// Check if exists
+					if (tmpAccount == NULL) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
 
-					// Save last select (don't care about overflow because of previous check)
-					lastSelectedAccount = accountFactory.GetAccountByIndex(index-1);
+					// Update last selected account
+					lastSelectedAccount = tmpAccount;
 
 					// Print data about account
 					std::cout << lastSelectedAccount->toString() << std::endl;
 
-					// Print last 10 transactions to avoid a lot of text
-					for (const auto transaction : lastSelectedAccount->getLastTransaction(10)) {
+					// Print all transactions
+					for (const auto transaction : lastSelectedAccount->getAllTransaction()) {
 						std::cout << transaction->toString();
 					}
+
+					delete tmpAccount;
 				}
 			}
 
@@ -163,7 +180,15 @@ int main()
 			{
 				if (parameters.size() != 2) throw Exceptions::IncorrectAmountOfArguments();
 				
-				double amount = InputParser::parse<double>(parameters[1]);
+				const double amount = InputParser::parse<double>(parameters[1]);
+
+				// Check if user entered more than decimal precision
+				const int dotPos = parameters[1].find(".");
+				if (dotPos != std::string::npos) {
+					if (parameters[1].size() - dotPos > 3) {
+						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+					}
+				}
 
 				// Check if amount to deposit / withdraw is 0
 				if (amount <= 0) throw Exceptions::IncorrectArgumentValue("Deposit or Withdraw amount should be more than 0!");
@@ -200,26 +225,30 @@ int main()
 			{
 				if (parameters.size() != 4) throw Exceptions::IncorrectAmountOfArguments();
 
-				int src = InputParser::parse<int>(parameters[1]);
-				int dest = InputParser::parse<int>(parameters[2]);
-				double sum = InputParser::parse<double>(parameters[3]);
-				
-				// Check if src and dest exists
-				if (src <= 0 || src - 1 > src || accountFactory.GetAmountOfAccounts() < src) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
-				if (dest <= 0 || dest - 1 > dest || accountFactory.GetAmountOfAccounts() < dest) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+				const int src = InputParser::parse<int>(parameters[1]);
+				const int dest = InputParser::parse<int>(parameters[2]);
+				const double sum = InputParser::parse<double>(parameters[3]);
 
+				// Check if user entered more than decimal precision
+				const int dotPos = parameters[3].find(".");
+				if (dotPos != std::string::npos) {
+					if (parameters[3].size() - dotPos > 3) {
+						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+					}
+				}
+				
+				// Get accounts
+				Accounts::Account* sourceAccount = accountFactory.GetAccountByIndex(src-1);
+				Accounts::Account* destinationAccount = accountFactory.GetAccountByIndex(dest-1);
+
+				// Check if exists
+				if (sourceAccount == NULL || destinationAccount == NULL) throw Exceptions::IncorrectArgumentValue("No account with such index exists!");
+
+				// Check if same account is selected
 				if (src == dest) throw Exceptions::IncorrectArgumentValue("Source and destination adress should not be the same!");
 
 				// Check amount
 				if (sum <= 0) throw Exceptions::IncorrectArgumentValue("Tranfer amount should more than 0!");
-				
-				// Get absolute index of accounts
-				src--;
-				dest--;
-
-				// Get accounts by index
-				Accounts::Account* sourceAccount = accountFactory.GetAccountByIndex(src);
-				Accounts::Account* destinationAccount = accountFactory.GetAccountByIndex(dest);
 
 				// Check if account is Current and overdraft is possible
 				double possibleOverdraft = 0;
@@ -237,7 +266,7 @@ int main()
 			{
 				if (parameters.size() != 2) throw Exceptions::IncorrectAmountOfArguments();
 
-				double amountOfYears = InputParser::parse<double>(parameters[1]);
+				const double amountOfYears = InputParser::parse<double>(parameters[1]);
 
 				// Check amount
 				if (amountOfYears <= 0) throw Exceptions::IncorrectArgumentValue("Project time should be more than 0!");
@@ -247,7 +276,7 @@ int main()
 
 				if (saving == NULL) {
 
-					// Get local copy of created accounts
+					// Get local copy of unmodifiable created accounts
 					std::vector<Accounts::Account*> openedAccounts = accountFactory.GetAccounts();
 
 					// Select last savings or ISA created account
@@ -256,6 +285,9 @@ int main()
 							break;
 						}
 					}
+
+					// Deallocate memory of copy
+					openedAccounts = std::vector<Accounts::Account*>();
 				}
 
 				// Check if no saving account created yet
@@ -263,15 +295,26 @@ int main()
 
 				// Calculate and print
 				std::cout << (*saving).computeInterest(amountOfYears) << std::endl;
+
+				// Deallocate pointer
+				delete saving;
 			}
 
 			else if (command.compare("search") == 0)
 			{
 				if (parameters.size() != 5) throw Exceptions::IncorrectAmountOfArguments();
 
-				int type = InputParser::parse<int>(parameters[1]);
-				double amount = InputParser::parse<double>(parameters[2]);
-				long long time_stamp = InputParser::parse<std::time_t>(parameters[3] + parameters[4]);
+				const int type = InputParser::parse<int>(parameters[1]);
+				const double amount = InputParser::parse<double>(parameters[2]);
+				const long long time_stamp = InputParser::parse<std::time_t>(parameters[3] + parameters[4]);
+
+				// Check if user entered more than decimal precision
+				const int dotPos = parameters[2].find(".");
+				if (dotPos != std::string::npos) {
+					if (parameters[2].size() - dotPos > 3) {
+						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
+					}
+				}
 
 				// Check if any accounts are open
 				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
@@ -280,7 +323,7 @@ int main()
 				if (lastSelectedAccount == NULL) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
 
 				// Find particular transaction
-				if (Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount))) {
+				if (const Transaction* transaction = lastSelectedAccount->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount))) {
 					
 					// Print all the data related to transaction
 					std::cout << (*transaction).toString();
@@ -309,7 +352,13 @@ int main()
 		catch (Exceptions::IncorrectArgumentValue) {
 			continue;
 		}
+
+		delete cstr;
+		delete[] token;
 	}
+
+	// Deallocate all the memory
+	delete lastSelectedAccount;
 
 	std::cout << "Press any key to quit...";
 	std::getchar();

@@ -16,14 +16,15 @@ private:
 
 public:
 	enum class transactionType { open_deposit, deposit, withdraw, transfer };
-	Transaction(transactionType type, double newValue, std::string newDescription = "");
+	Transaction(const transactionType& type, const double& newValue, std::string newDescription = "");
+	Transaction(const Transaction&) = default; // 1/5: Copy Ctor
+	Transaction(Transaction&&) noexcept = default; // 2/5: Move Ctor
+	Transaction& operator=(const Transaction&) = default; // 3/5: Copy Assignment
+	Transaction& operator=(Transaction&&) noexcept = default; // 4/5: Move Assignment
 	~Transaction();
 
 public:
-	bool operator==(const Transaction* transactionToCompareWith) const;
-	bool operator>(const Transaction* transactionToCompareWith) const;
-	bool operator<(const Transaction* transactionToCompareWith) const;
-	std::string toString();
+	const std::string toString() const;
 };
 
 #endif
