@@ -15,7 +15,7 @@ namespace AccountFactories {
 
 	const int AccountFactory::GetAmountOfAccounts() const
 	{
-		return newID - 1;
+		return openedAccounts.size();
 	}
 
 	const std::vector<Accounts::Account*>& AccountFactory::GetAccounts() const
@@ -25,7 +25,7 @@ namespace AccountFactories {
 
 	Accounts::Account* const AccountFactory::GetLastCreatedAccount() const
 	{
-		return openedAccounts[GetAmountOfAccounts()];
+		return openedAccounts[openedAccounts.size()-1];
 	}
 
 	Accounts::Account* const AccountFactory::GetAccountByIndex(const int index) const

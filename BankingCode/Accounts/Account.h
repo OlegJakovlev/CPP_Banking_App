@@ -16,11 +16,11 @@ namespace Accounts {
 	protected:
 		long id;
 		double balance;
-		std::multimap<std::string, const Transaction*> history;
+		std::vector<const Transaction*> history;
 		std::string accountName;
 
 	protected:
-		virtual void addTransaction(const Transaction::transactionType& type, const double amount, const std::string description = "");
+		virtual void addTransaction(const Transaction::transactionType& type, const double amount, const std::string& description = "");
 
 	public:
 		Account(const long newID, const double amount); // 0/5: Default Ctor
@@ -48,7 +48,11 @@ namespace Accounts {
 
 		virtual const std::string toString() const;
 
-		virtual const std::vector<const Transaction*> const searchTransaction(const std::string key) const;
+		virtual void searchTransactionByType(std::vector<const Transaction*>& transactions, const int type) const;
+		virtual void searchTransactionByAmount(std::vector<const Transaction*>& transactions, const int amount) const;
+		virtual void searchTransactionByDate(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchDate) const;
+		virtual void searchTransactionByTime(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchTime) const;
+
 		virtual const std::vector<const Transaction*> getLastTransaction(const int amount) const;
 		virtual const std::vector<const Transaction*> getAllTransaction() const;
 	};

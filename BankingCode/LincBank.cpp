@@ -34,11 +34,37 @@ void printOptions()
 	
 	std::cout << "project years: project balance forward in time" << "\n\n";
 
-	std::cout << "search type amount timestamp: find transaction by following parametrs" << "\n\t" 
-		<< "{ Type -> Initial Deposit (0), Deposit (1), Withdraw (2), Transfer (3) }" << "\n\t"
-		<< "{ Timestamp -> HH:MM:SS DD/MM/YYYY }" << "\n\n";
-	
+	std::cout << "search parameter: find transaction by one of the parameters" << "\n\t"
+		<< "{ Parameter -> Type (1), Money Amount (2), Date (3), Time (4) }" << "\n\n";
+
 	std::cout << "exit: close this application" << "\n";
+}
+
+void getInput(std::vector <std::string>& parameters, std::string& userCommand, const char splitChar = ' ') {
+	// Reset current parameters list
+	parameters.clear();
+	userCommand.clear();
+
+	// Extract and store input
+	std::getline(std::cin, userCommand);
+
+	// Reinitialize C-like string and save it
+	char* cstr = new char[userCommand.length() + 1];
+	strcpy(cstr, userCommand.c_str());
+
+	// Split input string into parts
+	char* token;
+	token = strtok(cstr, &splitChar);
+
+	// Save each input parametr
+	while (token != nullptr)
+	{
+		parameters.push_back(token);
+		token = strtok(nullptr, &splitChar);
+	}
+
+	delete[] cstr;
+	delete[] token;
 }
 
 int main()
@@ -49,32 +75,13 @@ int main()
 	AccountFactories::AccountFactory accountFactory;
 	Accounts::Account* lastSelectedAccount = nullptr;
 
-	std::cout << "~~~ Welcome to LincBank! ~~~\n";
+	std::cout << "~~~ Welcome to LincBank! ~~~" << "\n";
 	printOptions();
 
 	while (userCommand != "exit")
 	{
-		// clear ready for next command
-		parameters.clear(); 
-		std::cout << "\n>>> ";
-
-		// Extract and store input
-		std::getline(std::cin, userCommand);
-
-		// Initialize C-like string and save it
-		char* cstr = new char[userCommand.length() + 1];
-		strcpy(cstr, userCommand.c_str());
-
-		// Split input string into parts
-		char* token;
-		token = strtok(cstr, " ");
-
-		// Save each input parametr
-		while (token != nullptr)
-		{
-			parameters.push_back(token);
-			token = strtok(nullptr, " ");
-		}
+		std::cout << "\n" << ">>> ";
+		getInput(parameters, userCommand);
 
 		std::string command = "";
 
@@ -82,6 +89,9 @@ int main()
 		{
 			// If no command - ignore
 			if (parameters.empty()) continue;
+
+			// Print new line for better user experience
+			std::cout << "\n";
 
 			// Get main command parametr
 			command = parameters[0];
@@ -103,7 +113,7 @@ int main()
 				double initialOpeningBalance = InputParser::parse<double>(parameters[2]);
 
 				// Check if user entered more than decimal precision
-				const int dotPos = parameters[2].find(".");
+				const size_t dotPos = parameters[2].find(".");
 				if (dotPos != std::string::npos) {
 					if (parameters[2].size() - dotPos > 3) {
 						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
@@ -121,17 +131,17 @@ int main()
 				{
 				case (1):
 					lastSelectedAccount = accountFactory.CreateRegularAccount(openingBalance);
-					std::cout << "Current account created!\n";
+					std::cout << "Current account created!" << "\n";
 					break;
 
 				case (2):
 					lastSelectedAccount = accountFactory.CreateSavingsAccount(openingBalance);
-					std::cout << "Savings account created!\n";
+					std::cout << "Savings account created!" << "\n";
 					break;
 
 				case (3):
 					lastSelectedAccount = accountFactory.CreateISAAccount(openingBalance);
-					std::cout << "ISA account created!\n";
+					std::cout << "ISA account created!" << "\n";
 					break;
 
 				default:
@@ -157,10 +167,10 @@ int main()
 
 						// Print last 10 transactions to avoid a lot of text
 						for (const Transaction* transaction : acc->getLastTransaction(10)) {
-							std::cout << (*transaction).toString();
+							std::cout << (*transaction).toString() << "\n";
 						}
 
-						std::cout << "\n";
+						if (acc != accountFactory.GetLastCreatedAccount()) std::cout << "\n";
 					}
 				}
 
@@ -181,7 +191,7 @@ int main()
 
 					// Print all transactions
 					for (const auto transaction : lastSelectedAccount->getAllTransaction()) {
-						std::cout << transaction->toString();
+						std::cout << transaction->toString() << "\n";
 					}
 				}
 			}
@@ -193,7 +203,7 @@ int main()
 				const double amount = InputParser::parse<double>(parameters[1]);
 
 				// Check if user entered more than decimal precision
-				const int dotPos = parameters[1].find(".");
+				const size_t dotPos = parameters[1].find(".");
 				if (dotPos != std::string::npos) {
 					if (parameters[1].size() - dotPos > 3) {
 						throw Exceptions::IncorrectArgumentValue("Please provide correct withdraw/deposit amount!");
@@ -240,7 +250,7 @@ int main()
 				const double sum = InputParser::parse<double>(parameters[3]);
 
 				// Check if user entered more than decimal precision
-				const int dotPos = parameters[3].find(".");
+				const size_t dotPos = parameters[3].find(".");
 				if (dotPos != std::string::npos) {
 					if (parameters[3].size() - dotPos > 3) {
 						throw Exceptions::IncorrectArgumentValue("Please provide correct transfering amount!");
@@ -309,51 +319,131 @@ int main()
 
 			else if (command.compare("search") == 0)
 			{
-				if (parameters.size() != 5) throw Exceptions::IncorrectAmountOfArguments();
-
-				const int type = InputParser::parse<int>(parameters[1]);
-				const double amount = InputParser::parse<double>(parameters[2]);
-				const long long time_stamp = InputParser::parse<std::time_t>(parameters[3] + parameters[4]);
-
-				// Check if user entered more than decimal precision
-				const int dotPos = parameters[2].find(".");
-				if (dotPos != std::string::npos) {
-					if (parameters[2].size() - dotPos > 3) {
-						throw Exceptions::IncorrectArgumentValue("Please provide correct opening balance!");
-					}
-				}
+				if (parameters.size() != 2) throw Exceptions::IncorrectAmountOfArguments();
 
 				// Check if any accounts are open
 				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
-				// If no selected account, select last
-				if (lastSelectedAccount == nullptr) lastSelectedAccount = accountFactory.GetLastCreatedAccount();
+				const int type = InputParser::parse<int>(parameters[1]);
+
+				// Print functionality info for each search type
+				switch (type) {
+				case (1):
+					std::cout << "\n" << "Please provide an type of transaction." << "\n"
+						<< "Types: " << "\n"
+						<< " 1. Initial deposit" << "\n"
+						<< " 2. Deposit" << "\n"
+						<< " 3. Withdraw" << "\n"
+						<< " 4. Transfer" << "\n\n";
+
+					std::cout << "[search by type] >>> ";
+
+					// Get input
+					getInput(parameters, userCommand);
+
+					// Check if only 1 parameter was passed
+					if (parameters.size() != 1) throw Exceptions::IncorrectAmountOfArguments();
+					break;
+
+				case (2):
+					std::cout << "\n" << "Please provide amount of money in transaction." << "\n\n";
+					std::cout << "[search by money] >>> ";
+
+					// Get input
+					getInput(parameters, userCommand);
+
+					// Check if only 1 parameter was passed
+					if (parameters.size() != 1) throw Exceptions::IncorrectAmountOfArguments();
+					break;
+
+				case (3):
+					std::cout << "\n" << "Please provide a date of transaction." << "\n"
+						<< "\n" << "Examples:" << "\n"
+						<< "3/12/2021 - Specific Date" << "\n\n"
+						<< "Advanced Examples:" << "\n"
+						<< "*/*/2021 - Transactions in 2021" << "\n"
+						<< "*/12/* - Transactions in any year December" << "\n"
+						<< "3/*/* - Transactions on 3rd of any month and year" << "\n"
+						<< "*/12/2021 - Transactions in December of 2021" << "\n"
+						<< "3/*/2021 - Transactions on 3rd of any month of 2021" << "\n"
+						<< "3/12/* - Transactions on 3rd of December" << "\n\n";
+
+					std::cout << "[search by date] >>> ";
+
+					// Get input
+					getInput(parameters, userCommand, '/');
+
+					// Check if only 3 parameters were passed
+					if (parameters.size() != 3) throw Exceptions::IncorrectAmountOfArguments();
+
+					break;
+
+				case (4):
+					std::cout << "Please provide time of transaction in 24h type." << "\n"
+						<< "\n" << "Examples: " << "\n"
+						<< "13:12:59 - Specific Time" << "\n\n"
+						<< "Advanced Examples:" << "\n"
+						<< "*:*:59 - Transactions made in specific second of any minute" << "\n"
+						<< "*:12:* - Transactions made in specific minute of any hour" << "\n"
+						<< "*:12:59 - Transactions made in specific minute and second" << "\n"
+						<< "13:*:* - Transactions made in specific hour" << "\n"
+						<< "13:*:59 - Transactions made in specific hour and second" << "\n"
+						<< "13:12:* - Transactions made in specific hour and minute" << "\n\n";
+
+					std::cout << "[search by time] >>> ";
+
+					// Get input
+					getInput(parameters, userCommand, ':');
+
+					// Check if only 3 parameters were passed
+					if (parameters.size() != 3) throw Exceptions::IncorrectAmountOfArguments();
+
+					break;
+
+				default:
+					throw Exceptions::IncorrectArgumentValue("Only 1-4 values are available!");
+				}
+
+				std::cout << "\n";
 
 				bool anyTransactionsFound = false;
-				std::vector<const Transaction*> transactions;
+				std::vector<const Transaction*> foundTransactions;
 
-				// Try to find particular transactions for all accounts
-				for (const Accounts::Account* account : accountFactory.GetAccounts()) {
+				// Check transaction in each account
+				for (Accounts::Account* account : accountFactory.GetAccounts()) {
+					foundTransactions.clear();
+
+					// Each type has own unique steps
+					switch (type) {
+					case (1):
+						account->searchTransactionByType(foundTransactions, InputParser::parse<int>(parameters[0])-1);
+						break;
+					case (2):
+						account->searchTransactionByAmount(foundTransactions, InputParser::parse<double>(parameters[0]));
+						break;
+					case (3):
+						account->searchTransactionByDate(foundTransactions, parameters);
+						break;
+					case (4):
+						account->searchTransactionByTime(foundTransactions, parameters);
+						break;
+					}
 					
-					// Get transactions for each account
-					transactions = account->searchTransaction(std::to_string(time_stamp) + std::to_string(type) + std::to_string(amount));
+					if (foundTransactions.size() == 0) continue;
 
-					// Nothing was found
-					if (transactions.size() == 0) continue;
+					// If any transactions are printed, no error message needed
 					anyTransactionsFound = true;
 
-					// Print account data and appoporiate transactions
+					// Print data about account and selected transactions
 					std::cout << account->toString() << "\n";
 
-					for (auto transaction : transactions) {
-						// Print all the data related to transaction
-						std::cout << (*transaction).toString();
+					for (auto transaction : foundTransactions) {
+						std::cout << transaction->toString() << "\n";
 					}
 
 					std::cout << "\n";
 				}
-				
-				// If nothing found throw exception
+
 				if (!anyTransactionsFound) throw Exceptions::IncorrectArgumentTypes("No provided transaction was found!");
 			}
 
@@ -376,9 +466,6 @@ int main()
 		catch (Exceptions::IncorrectArgumentValue) {
 			continue;
 		}
-
-		delete cstr;
-		delete[] token;
 	}
 
 	// Deallocate all the memory

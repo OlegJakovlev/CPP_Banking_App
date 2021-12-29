@@ -1,9 +1,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Transaction.h"
 
-Transaction::Transaction(const transactionType& type, const double newValue, const std::string newDescription) {
-	if (newDescription == "") {
-		switch ((int)type) {
+Transaction::Transaction(const transactionType& newType, const double newValue, const std::string& description) {
+	type = newType;
+	desc = description;
+
+	// Apply default description if there is no current
+	if (description == "") {
+		switch ((int) type) {
 		case 0:
 			desc = "Initial deposit";
 			break;
@@ -18,12 +22,14 @@ Transaction::Transaction(const transactionType& type, const double newValue, con
 			break;
 		}
 	}
-	else {
-		desc = newDescription;
-	}
 
+	// Set amount of transaction
 	value = newValue;
-	timestamp = std::time(0);
+
+	// Get current time
+	auto now = std::chrono::system_clock::now();
+	time_t tt = std::chrono::system_clock::to_time_t(now);
+	date = *localtime(&tt);
 }
 
 Transaction::~Transaction() { }
@@ -33,5 +39,28 @@ const std::string Transaction::toString() const {
 		+ ": $" 
 		+ std::to_string(value).substr(0, std::to_string(value).find(".") + 3) 
 		+ " on " 
-		+ std::asctime(std::localtime(&timestamp)); // TODO: Replace with safe function
+		+ getTimestamp();
+}
+
+const std::string Transaction::getTimestamp() const {
+	char buffer[30];
+
+	// Pretty-parse date + time
+	strftime(buffer, sizeof(buffer), "%d/%m/%y %T", &date);
+
+	return buffer;
+}
+
+const double Transaction::getAmount() const
+{
+	return value;
+}
+
+const int Transaction::getNumericType() const {
+	return (int) type;
+}
+
+const tm Transaction::getDateObject() const 
+{
+	return date;
 }

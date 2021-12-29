@@ -9,10 +9,10 @@ namespace Accounts {
 
 	Account::~Account() {
 		// Deallocate all pointers of transactions
-		std::map<std::string, const Transaction*>::const_iterator it = history.cbegin();
+		std::vector<const Transaction*>::const_iterator it = history.cbegin();
 
 		while (it != history.cend()) {
-			delete it->second;
+			delete *it;
 			it = history.erase(it);
 		}
 	}
@@ -62,26 +62,74 @@ namespace Accounts {
 			+ std::to_string(balance).substr(0, std::to_string(balance).find(".") + 3));
 	}
 
-	const std::vector<const Transaction*> const Account::searchTransaction(const std::string key) const
+	void Account::searchTransactionByType(std::vector<const Transaction*>& transactions, const int type) const
 	{
-		std::vector<const Transaction*> result;
-
-		for (std::multimap<std::string, const Transaction*>::const_iterator it = history.find(key); it != history.cend(); it++) {
-			result.push_back((*it).second);
+		for (const Transaction* transaction : history) {
+			if ((*transaction).getNumericType() == type) {
+				transactions.push_back(transaction);
+			}
 		}
-
-		return result;
 	}
 
-	void Account::addTransaction(const Transaction::transactionType& type, const double amount, const std::string description) {
-		// Concatenate the key
-		std::string key = std::to_string(std::time(0)) +
-			std::to_string((int)type) +
-			std::to_string(amount);
+	void Account::searchTransactionByAmount(std::vector<const Transaction*>& transactions, const int amount) const
+	{
+		for (const Transaction* transaction : history) {
+			if ((*transaction).getAmount() == amount) {
+				transactions.push_back(transaction);
+			}
+		}
+	}
 
-		Transaction* const newTransaction = new Transaction(type, amount, description);
+	void Account::searchTransactionByDate(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchDate) const
+	{
+		for (const Transaction* transaction : history) {
+			bool equal = true;
 
-		history.insert({ key, newTransaction });
+			// Get transaction date
+			tm transactionDate = (*transaction).getDateObject();
+			std::vector<std::string> splitTransactionDate;
+			splitTransactionDate.push_back(std::to_string(transactionDate.tm_mday));
+			splitTransactionDate.push_back(std::to_string(transactionDate.tm_mon + 1));
+			splitTransactionDate.push_back(std::to_string(transactionDate.tm_year + 1900));
+
+			// Compare dates 
+			for (int i = 0; i < parsedSearchDate.size(); i++) {
+				// If user input *, we ignore date difference
+				if (parsedSearchDate[i] != "*" && parsedSearchDate[i] != splitTransactionDate[i]) {
+					equal = false;
+				}
+			}
+
+			if (equal) transactions.push_back(transaction);
+		}
+	}
+
+	void Account::searchTransactionByTime(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchTime) const
+	{
+		for (const Transaction* transaction : history) {
+			bool equal = true;
+
+			// Get transaction date
+			const tm transactionTime = (*transaction).getDateObject();
+			std::vector<std::string> splitTransactionTime;
+			splitTransactionTime.push_back(std::to_string(transactionTime.tm_hour));
+			splitTransactionTime.push_back(std::to_string(transactionTime.tm_min));
+			splitTransactionTime.push_back(std::to_string(transactionTime.tm_sec));
+
+			// Compare dates
+			for (int i = 0; i < parsedSearchTime.size(); i++) {
+				// If user input *, we ignore date difference
+				if (parsedSearchTime[i] != "*" && parsedSearchTime[i] != splitTransactionTime[i]) {
+					equal = false;
+				}
+			}
+
+			if (equal) transactions.push_back(transaction);
+		}
+	}
+
+	void Account::addTransaction(const Transaction::transactionType& type, const double amount, const std::string& description) {
+		history.push_back(new Transaction(type, amount, description));
 	}
 
 	const std::vector<const Transaction*> Account::getLastTransaction(const int amount) const
@@ -89,15 +137,15 @@ namespace Accounts {
 		std::vector<const Transaction*> result;
 
 		// Initialize start and end pointers
-		std::map<std::string, const Transaction*>::const_reverse_iterator it = history.crbegin();
-		std::map<std::string, const Transaction*>::const_reverse_iterator end_it  = it;
+		std::vector<const Transaction*>::const_reverse_iterator it = history.crbegin();
+		std::vector<const Transaction*>::const_reverse_iterator end_it  = it;
 		
 		// Iterate throught and get last memory adress possible / need
 		std::advance(end_it, (amount > history.size()) ? history.size() : amount);
 
 		// Iterate throught and save transactions
 		for (; it != end_it; it++) {
-			result.push_back(it->second);
+			result.push_back(*it);
 		}
 
 		return result;
@@ -108,12 +156,12 @@ namespace Accounts {
 		std::vector<const Transaction*> result;
 
 		// Initialize start and end pointers
-		std::map<std::string, const Transaction*>::const_reverse_iterator it = history.crbegin();
-		std::map<std::string, const Transaction*>::const_reverse_iterator end_it = history.crend();
+		std::vector<const Transaction*>::const_reverse_iterator it = history.crbegin();
+		std::vector<const Transaction*>::const_reverse_iterator end_it = history.crend();
 
 		// Iterate throught and save transactions
 		for (; it != end_it; it++) {
-			result.push_back(it->second);
+			result.push_back(*it);
 		}
 
 		return result;
