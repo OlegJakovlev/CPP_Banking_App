@@ -35,18 +35,18 @@ Transaction::Transaction(const transactionType& newType, const double newValue, 
 Transaction::~Transaction() { }
 
 const std::string Transaction::toString() const {
-	return "-- " + desc 
-		+ ": $" 
-		+ std::to_string(value).substr(0, std::to_string(value).find(".") + 3) 
-		+ " on " 
+	return "-- " + desc
+		+ ": $"
+		+ std::to_string(value).substr(0, std::to_string(value).find(".") + 3)
+		+ " on "
 		+ getTimestamp();
 }
 
 const std::string Transaction::getTimestamp() const {
-	char buffer[30];
+	char buffer[20];
 
 	// Pretty-parse date + time
-	strftime(buffer, sizeof(buffer), "%d/%m/%y %T", &date);
+	std::strftime(buffer, sizeof(buffer), "%d/%m/%y %T", &date);
 
 	return buffer;
 }
@@ -60,7 +60,7 @@ const int Transaction::getNumericType() const {
 	return (int) type;
 }
 
-const tm Transaction::getDateObject() const 
+const tm& Transaction::getDateObject() const 
 {
 	return date;
 }

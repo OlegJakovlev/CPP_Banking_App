@@ -1,8 +1,46 @@
 #include "AccountFactory.h"
 
 namespace AccountFactories {
-	AccountFactory::AccountFactory()
+	AccountFactory::AccountFactory(const AccountFactory& copyFactory)
 	{
+		openedAccounts = copyFactory.openedAccounts;
+		newID = copyFactory.newID;
+	}
+
+	AccountFactory::AccountFactory(AccountFactory&& newFactory) noexcept {
+		// Move elements to new object
+		newFactory.openedAccounts = std::move(openedAccounts);
+		newFactory.newID = std::move(newID);
+
+		// Delete current info
+		openedAccounts.clear();
+		openedAccounts.shrink_to_fit();
+		newID = 1;
+	}
+
+	AccountFactory& AccountFactory::operator=(AccountFactory&& oldFactory) noexcept {
+		if (this == &oldFactory) return *this;
+
+		// Save new info
+		openedAccounts = oldFactory.openedAccounts;
+		newID = oldFactory.newID;
+
+		// Delete old info
+		oldFactory.openedAccounts.clear();
+		oldFactory.openedAccounts.shrink_to_fit();
+		oldFactory.newID = 0;
+
+		return *this;
+	}
+
+	AccountFactory& AccountFactory::operator=(const AccountFactory& copyFactory)
+	{
+		if (this == &copyFactory) return *this;
+
+		openedAccounts = copyFactory.openedAccounts;
+		newID = copyFactory.newID;
+		
+		return *this;
 	}
 
 	AccountFactory::~AccountFactory()
@@ -67,22 +105,23 @@ namespace AccountFactories {
 		// Check if ISA is already open
 		Accounts::Savings* ISA = nullptr;
 
-		std::for_each(openedAccounts.begin(), openedAccounts.end(), [&](Accounts::Account* account) {
-
+		std::find_if(openedAccounts.begin(), openedAccounts.end(), [&](Accounts::Account* account) {
 			// Check if Savings account
 			if (ISA = dynamic_cast<Accounts::Savings*>(account)) {
 
 				// Check if account is ISA
 				if ((*ISA).isISA()) {
-					ISA = (Accounts::Savings*)account;
-					return;
+					ISA = (Accounts::Savings*) account;
+					return true;
 				}
 			}
 
 			ISA = nullptr;
 		});
 
-		if (ISA) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
+		if (ISA != nullptr) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
+
+		// delete ISA; // After dealocation (even in if check), undefined behaviour, why?
 
 		Accounts::Account* const newAccount = new Accounts::Savings(newID++, openingBalance, true);
 		openedAccounts.push_back(newAccount);

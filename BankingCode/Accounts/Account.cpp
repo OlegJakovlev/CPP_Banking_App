@@ -19,8 +19,8 @@ namespace Accounts {
 
 	void Account::deposit(const double amount,
 		const Transaction::transactionType& type,
-		const std::string successfulMessage,
-		const std::string transactionDescription
+		const std::string& successfulMessage,
+		const std::string& transactionDescription
 	) {
 		balance += amount;
 		addTransaction(type, amount, transactionDescription);
@@ -29,8 +29,8 @@ namespace Accounts {
 
 	void Account::withdraw(const double amount,
 		const Transaction::transactionType& type,
-		const std::string successfulMessage,
-		const std::string transactionDescription
+		const std::string& successfulMessage,
+		const std::string& transactionDescription
 	) {
 		balance -= amount;
 		addTransaction(type, amount, transactionDescription);

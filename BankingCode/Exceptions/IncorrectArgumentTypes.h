@@ -11,7 +11,7 @@ namespace Exceptions {
     {
     public:
         IncorrectArgumentTypes();
-        IncorrectArgumentTypes(const std::string message);
+        IncorrectArgumentTypes(const std::string& message);
         ~IncorrectArgumentTypes() override;
     };
 }

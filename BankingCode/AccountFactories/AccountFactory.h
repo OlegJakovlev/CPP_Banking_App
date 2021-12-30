@@ -12,17 +12,17 @@
 namespace AccountFactories {
 	class AccountFactory
 	{
+	public:
+		explicit AccountFactory() = default;
+		explicit AccountFactory(const AccountFactory& copyFactory); // 1/5: Copy Ctor
+		AccountFactory& operator=(const AccountFactory& copyFactory); // 2/5: Copy Assignment
+		explicit AccountFactory(AccountFactory&& newFactory) noexcept; // 3/5: Move Ctor
+		AccountFactory& operator=(AccountFactory&& newFactory) noexcept; // 4/5: Move Assignment
+		~AccountFactory();
+	
 	private:
 		long newID = 1;
 		std::vector <Accounts::Account*> openedAccounts;
-
-	public:
-		AccountFactory();
-		AccountFactory(const AccountFactory&) = delete; // 1/5: Copy Ctor
-		AccountFactory(AccountFactory&&) noexcept = delete; // 2/5: Move Ctor
-		AccountFactory& operator=(const AccountFactory&) = delete; // 3/5: Copy Assignment
-		AccountFactory& operator=(AccountFactory&&) noexcept = delete; // 4/5: Move Assignment
-		~AccountFactory();
 
 	public:
 		const int GetAmountOfAccounts() const;

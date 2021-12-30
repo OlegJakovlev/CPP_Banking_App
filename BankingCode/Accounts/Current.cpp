@@ -15,8 +15,8 @@ namespace Accounts {
 
 	void Current::withdraw(const double amount,
 		const Transaction::transactionType& type,
-		const std::string successfulMessage,
-		const std::string transactionDescription
+		const std::string& successfulMessage,
+		const std::string& transactionDescription
 	) {
 		// Check if overdraft should be used
 		double difference = amount - balance;
@@ -39,8 +39,8 @@ namespace Accounts {
 
 	void Current::deposit(const double amount,
 		const Transaction::transactionType& type,
-		const std::string successfulMessage,
-		const std::string transactionDescription
+		const std::string& successfulMessage,
+		const std::string& transactionDescription
 	) {
 		// Check if overdraft was used
 		double overdraftUsed = initialOverdraft - overdraft;

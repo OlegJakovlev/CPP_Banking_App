@@ -5,7 +5,7 @@ namespace Exceptions {
 		std::cout << "Incorrect type of argument(-s) passed!" << "\n";
 	}
 
-	IncorrectArgumentTypes::IncorrectArgumentTypes(const std::string message) {
+	IncorrectArgumentTypes::IncorrectArgumentTypes(const std::string& message) {
 		std::cout << message << "\n";
 	}
 
