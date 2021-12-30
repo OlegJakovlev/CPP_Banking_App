@@ -8,6 +8,3 @@ Debug/
 # Custom compilation resulsts
 *.obj
 *.exe
-
-*.vcxproj
-*.vcxproj.*

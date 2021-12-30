@@ -45,7 +45,7 @@ namespace AccountFactories {
 
 	AccountFactory::~AccountFactory()
 	{
-		// Why openedAccounts are automatically dealocated?
+		// Why openedAccounts pointers are automatically dealocated?
 
 		openedAccounts.clear();
 		openedAccounts.shrink_to_fit();

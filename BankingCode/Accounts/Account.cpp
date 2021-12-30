@@ -15,6 +15,9 @@ namespace Accounts {
 			delete *it;
 			it = history.erase(it);
 		}
+
+		history.clear();
+		history.shrink_to_fit();
 	}
 
 	void Account::deposit(const double amount,
