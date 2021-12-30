@@ -225,7 +225,8 @@ int main()
 					double possibleOverdraft = 0;
 
 					// Check if account is Current and overdraft is possible
-					if (Accounts::Current* current = dynamic_cast<Accounts::Current*>(lastSelectedAccount)) possibleOverdraft = current->getOverdraft();
+					if (lastSelectedAccount->getTypeName() == "Current") 
+						possibleOverdraft = dynamic_cast<Accounts::Current*>(lastSelectedAccount)->getOverdraft();
 					
 					// Check balance
 					if (amount > lastSelectedAccount->getBalance() + possibleOverdraft) throw Exceptions::IncorrectArgumentValue("Insufficient balance to perform operation!");
@@ -272,7 +273,8 @@ int main()
 
 				// Check if account is Current and overdraft is possible
 				double possibleOverdraft = 0;
-				if (Accounts::Current* current = dynamic_cast<Accounts::Current*>(sourceAccount)) possibleOverdraft = current->getOverdraft();
+				if (lastSelectedAccount->getTypeName() == "Current") 
+					possibleOverdraft = dynamic_cast<Accounts::Current*>(lastSelectedAccount)->getOverdraft();
 
 				// Check balance
 				if (sum > sourceAccount->getBalance() + possibleOverdraft) throw Exceptions::IncorrectArgumentValue("Insufficient balance to perform operation!");
@@ -305,9 +307,6 @@ int main()
 							break;
 						}
 					}
-
-					// Deallocate memory of copy
-					openedAccounts = std::vector<Accounts::Account*>();
 				}
 
 				// Check if no saving account created yet

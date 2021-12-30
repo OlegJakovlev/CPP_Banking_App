@@ -101,27 +101,14 @@ namespace AccountFactories {
 	Accounts::Account* const AccountFactory::CreateISAAccount(const double openingBalance)
 	{
 		if (openingBalance < 1000) throw Exceptions::IncorrectArgumentValue("ISA accounts require opening balance of 1000 or more!");
-		
-		// Check if ISA is already open
-		Accounts::Savings* ISA = nullptr;
 
+		// Iterate through the list of accounts
 		std::find_if(openedAccounts.begin(), openedAccounts.end(), [&](Accounts::Account* account) {
-			// Check if Savings account
-			if (ISA = dynamic_cast<Accounts::Savings*>(account)) {
-
-				// Check if account is ISA
-				if ((*ISA).isISA()) {
-					ISA = (Accounts::Savings*) account;
-					return true;
-				}
+			if ((*account).getTypeName() == "ISA") {
+				throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
 			}
-
-			ISA = nullptr;
+			return false;
 		});
-
-		if (ISA != nullptr) throw Exceptions::IncorrectArgumentValue("ISA account already opened! Only 1 ISA account is available at time!");
-
-		// delete ISA; // After dealocation (even in if check), undefined behaviour, why?
 
 		Accounts::Account* const newAccount = new Accounts::Savings(newID++, openingBalance, true);
 		openedAccounts.push_back(newAccount);

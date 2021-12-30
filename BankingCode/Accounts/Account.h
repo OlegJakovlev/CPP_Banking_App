@@ -34,6 +34,7 @@ namespace Accounts {
 		// Property getters
 		virtual double getBalance() const;
 		virtual long getID() const;
+		virtual const std::string& getTypeName() const;
 
 		// Visual representation
 		virtual const std::string toString() const;

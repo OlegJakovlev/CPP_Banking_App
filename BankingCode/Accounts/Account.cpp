@@ -58,6 +58,11 @@ namespace Accounts {
 		return id;
 	}
 
+	const std::string& Account::getTypeName() const
+	{
+		return accountName;
+	}
+
 	const std::string Account::toString() const {
 		return ("ID: " + std::to_string(id) 
 			+ " | Type: " + accountName 
