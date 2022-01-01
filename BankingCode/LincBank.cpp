@@ -287,8 +287,8 @@ int main()
 
 				// Check if account is Current and overdraft is possible
 				long double possibleOverdraft = 0;
-				if (lastSelectedAccount->getTypeName() == "Current")
-					possibleOverdraft = dynamic_cast<Accounts::Current*>(lastSelectedAccount)->getOverdraft();
+				if (sourceAccount->getTypeName() == "Current")
+					possibleOverdraft = dynamic_cast<Accounts::Current*>(sourceAccount)->getOverdraft();
 
 				// Check balance
 				if (sum > sourceAccount->getBalance() + possibleOverdraft) throw Exceptions::IncorrectArgumentValue("Insufficient balance to perform operation!");

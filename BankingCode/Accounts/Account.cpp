@@ -173,10 +173,9 @@ namespace Accounts {
 
 		// Initialize start and end pointers
 		std::vector<const Transaction*>::const_reverse_iterator it = history.crbegin();
-		std::vector<const Transaction*>::const_reverse_iterator end_it = history.crend();
 
 		// Iterate throught and save transactions
-		for (; it != end_it; it++) {
+		for (; it != history.crend(); it++) {
 			result.push_back(*it);
 		}
 
