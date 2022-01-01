@@ -81,6 +81,26 @@ double InputParser::parse<double>(const std::string& toParse) {
 }
 
 template <>
+long double InputParser::parse<long double>(const std::string& toParse) {
+	try {
+		// Convert and record number of converted symbols
+		std::size_t amountOfConvertedSymbols;
+		const auto result = std::stold(toParse, &amountOfConvertedSymbols);
+
+		// Check if input is corrupted
+		if (amountOfConvertedSymbols != toParse.size()) throw Exceptions::IncorrectArgumentValue();
+
+		return result;
+	}
+	catch (const std::invalid_argument) {
+		throw Exceptions::IncorrectArgumentTypes();
+	}
+	catch (const std::out_of_range) {
+		throw Exceptions::IncorrectArgumentValue();
+	}
+}
+
+template <>
 long InputParser::parse<long>(const std::string& toParse) {
 	try {
 		// Convert and record number of converted symbols

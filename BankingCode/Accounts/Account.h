@@ -23,7 +23,7 @@ namespace Accounts {
 	
 	protected:
 		long id;
-		double balance;
+		double long balance;
 		std::vector<const Transaction*> history;
 		std::string accountName;
 

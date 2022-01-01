@@ -72,29 +72,35 @@ namespace Accounts {
 
 	void Account::searchTransactionByType(std::vector<const Transaction*>& transactions, const int type) const
 	{
-		for (const Transaction* transaction : history) {
-			if ((*transaction).getNumericType() == type) {
-				transactions.push_back(transaction);
+		std::vector<const Transaction*>::const_reverse_iterator transaction = history.crbegin();
+
+		for (; transaction != history.crend(); transaction++) {
+			if ((*transaction)->getNumericType() == type) {
+				transactions.push_back(*transaction);
 			}
 		}
 	}
 
 	void Account::searchTransactionByAmount(std::vector<const Transaction*>& transactions, const int amount) const
 	{
-		for (const Transaction* transaction : history) {
-			if ((*transaction).getAmount() == amount) {
-				transactions.push_back(transaction);
+		std::vector<const Transaction*>::const_reverse_iterator transaction = history.crbegin();
+
+		for (; transaction != history.crend(); transaction++) {
+			if ((*transaction)->getAmount() == amount) {
+				transactions.push_back(*transaction);
 			}
 		}
 	}
 
 	void Account::searchTransactionByDate(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchDate) const
 	{
-		for (const Transaction* transaction : history) {
+		std::vector<const Transaction*>::const_reverse_iterator transaction = history.crbegin();
+
+		for (; transaction != history.crend(); transaction++) {
 			bool equal = true;
 
 			// Get transaction date
-			tm transactionDate = (*transaction).getDateObject();
+			tm transactionDate = (*transaction)->getDateObject();
 			std::vector<std::string> splitTransactionDate;
 			splitTransactionDate.push_back(std::to_string(transactionDate.tm_mday));
 			splitTransactionDate.push_back(std::to_string(transactionDate.tm_mon + 1));
@@ -108,17 +114,19 @@ namespace Accounts {
 				}
 			}
 
-			if (equal) transactions.push_back(transaction);
+			if (equal) transactions.push_back(*transaction);
 		}
 	}
 
 	void Account::searchTransactionByTime(std::vector<const Transaction*>& transactions, const std::vector<std::string>& parsedSearchTime) const
 	{
-		for (const Transaction* transaction : history) {
+		std::vector<const Transaction*>::const_reverse_iterator transaction = history.crbegin();
+
+		for (; transaction != history.crend(); transaction++) {
 			bool equal = true;
 
 			// Get transaction date
-			const tm transactionTime = (*transaction).getDateObject();
+			const tm transactionTime = (*transaction)->getDateObject();
 			std::vector<std::string> splitTransactionTime;
 			splitTransactionTime.push_back(std::to_string(transactionTime.tm_hour));
 			splitTransactionTime.push_back(std::to_string(transactionTime.tm_min));
@@ -132,7 +140,7 @@ namespace Accounts {
 				}
 			}
 
-			if (equal) transactions.push_back(transaction);
+			if (equal) transactions.push_back(*transaction);
 		}
 	}
 

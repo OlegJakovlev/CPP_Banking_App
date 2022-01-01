@@ -1,4 +1,4 @@
-#define DEBUG true
+#define DOUBLE_BREAKING_AMOUNT 99999999999999
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
@@ -110,7 +110,7 @@ int main()
 
 				// Parse values
 				const unsigned type = InputParser::parse<unsigned>(parameters[1]);
-				double initialOpeningBalance = InputParser::parse<double>(parameters[2]);
+				long double initialOpeningBalance = InputParser::parse<long double>(parameters[2]);
 
 				// Check if user entered more than decimal precision
 				const size_t dotPos = parameters[2].find(".");
@@ -123,8 +123,11 @@ int main()
 				// Check for -0 input
 				if ((initialOpeningBalance + 0.0) == 0.00) initialOpeningBalance = 0;
 
+				// Check for precision breaking input
+				if (initialOpeningBalance > DOUBLE_BREAKING_AMOUNT) throw Exceptions::IncorrectArgumentValue("Sorry, our bank can not store such amount of money!");
+
 				// Make opening balance const for security purposes
-				const double openingBalance = initialOpeningBalance;
+				const long double openingBalance = initialOpeningBalance;
 
 				// Open account and save it to lastSelected
 				switch (type)
@@ -200,7 +203,7 @@ int main()
 			{
 				if (parameters.size() != 2) throw Exceptions::IncorrectAmountOfArguments();
 				
-				const double amount = InputParser::parse<double>(parameters[1]);
+				const long double amount = InputParser::parse<long double>(parameters[1]);
 
 				// Check if user entered more than decimal precision
 				const size_t dotPos = parameters[1].find(".");
@@ -213,6 +216,9 @@ int main()
 				// Check if amount to deposit / withdraw is 0
 				if (amount <= 0) throw Exceptions::IncorrectArgumentValue("Deposit or Withdraw amount should be more than 0!");
 
+				// Check for precision breaking input
+				if (amount > DOUBLE_BREAKING_AMOUNT) throw Exceptions::IncorrectArgumentValue("Sorry, our bank can not store such amount of money!");
+
 				// Check if any accounts are open
 				if (accountFactory.GetAmountOfAccounts() == 0) throw Exceptions::IncorrectArgumentValue("No account(-s) exists!");
 
@@ -222,7 +228,7 @@ int main()
 				// Withdraw funds from most recently viewed account
 				if (command.compare("withdraw") == 0) {
 
-					double possibleOverdraft = 0;
+					long double possibleOverdraft = 0;
 
 					// Check if account is Current and overdraft is possible
 					if (lastSelectedAccount->getTypeName() == "Current") 
@@ -237,6 +243,10 @@ int main()
 
 				// Deposit funds into most recently viewed account
 				else {
+					// Check if balance does not overflow breaking point
+					if (lastSelectedAccount->getBalance() + amount > DOUBLE_BREAKING_AMOUNT) 
+						throw Exceptions::IncorrectArgumentValue("Balance limit reached! Please deposit less or try to wtihdraw some money!");
+					
 					lastSelectedAccount->deposit(amount);
 				}
 			}
@@ -248,7 +258,7 @@ int main()
 
 				const int src = InputParser::parse<int>(parameters[1]);
 				const int dest = InputParser::parse<int>(parameters[2]);
-				const double sum = InputParser::parse<double>(parameters[3]);
+				const long double sum = InputParser::parse<long double>(parameters[3]);
 
 				// Check if user entered more than decimal precision
 				const size_t dotPos = parameters[3].find(".");
@@ -271,9 +281,13 @@ int main()
 				// Check amount
 				if (sum <= 0) throw Exceptions::IncorrectArgumentValue("Tranfer amount should more than 0!");
 
+				// Check if balance does not overflow breaking point
+				if (destinationAccount->getBalance() + sum > DOUBLE_BREAKING_AMOUNT)
+					throw Exceptions::IncorrectArgumentValue("Balance limit reached! Please transfer less or try to withdraw some money from source first!");
+
 				// Check if account is Current and overdraft is possible
-				double possibleOverdraft = 0;
-				if (lastSelectedAccount->getTypeName() == "Current") 
+				long double possibleOverdraft = 0;
+				if (lastSelectedAccount->getTypeName() == "Current")
 					possibleOverdraft = dynamic_cast<Accounts::Current*>(lastSelectedAccount)->getOverdraft();
 
 				// Check balance
@@ -313,7 +327,7 @@ int main()
 				if (saving == nullptr) throw Exceptions::IncorrectArgumentTypes("No Regular Saving or ISA account(-s) were found!");
 
 				// Calculate and print
-				std::cout << (*saving).computeInterest(amountOfYears) << "\n";
+				std::cout << "Estimated balance: " << (*saving).computeInterest(amountOfYears) << "$" << "\n";
 			}
 
 			else if (command.compare("search") == 0)
@@ -405,7 +419,6 @@ int main()
 
 				std::cout << "\n";
 
-				bool anyTransactionsFound = false;
 				std::vector<const Transaction*> foundTransactions;
 
 				// Check transaction in each account
@@ -417,21 +430,21 @@ int main()
 					case (1):
 						account->searchTransactionByType(foundTransactions, InputParser::parse<int>(parameters[0])-1);
 						break;
+
 					case (2):
-						account->searchTransactionByAmount(foundTransactions, InputParser::parse<double>(parameters[0]));
+						account->searchTransactionByAmount(foundTransactions, InputParser::parse<long double>(parameters[0]));
 						break;
+
 					case (3):
 						account->searchTransactionByDate(foundTransactions, parameters);
 						break;
+
 					case (4):
 						account->searchTransactionByTime(foundTransactions, parameters);
 						break;
 					}
 					
-					if (foundTransactions.size() == 0) continue;
-
-					// If any transactions are printed, no error message needed
-					anyTransactionsFound = true;
+					if (foundTransactions.size() == 0) throw Exceptions::IncorrectArgumentTypes("No provided transaction was found!");
 
 					// Print data about account and selected transactions
 					std::cout << account->toString() << "\n";
@@ -442,8 +455,6 @@ int main()
 
 					std::cout << "\n";
 				}
-
-				if (!anyTransactionsFound) throw Exceptions::IncorrectArgumentTypes("No provided transaction was found!");
 			}
 
 			else if (command.compare("exit") == 0)
