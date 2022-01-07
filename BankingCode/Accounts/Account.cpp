@@ -152,33 +152,14 @@ namespace Accounts {
 	{
 		std::vector<const Transaction*> result;
 
-		// Initialize start and end pointers
-		std::vector<const Transaction*>::const_reverse_iterator it = history.crbegin();
-		std::vector<const Transaction*>::const_reverse_iterator end_it  = it;
-		
-		// Iterate throught and get last memory adress possible / need
-		std::advance(end_it, (amount > history.size()) ? history.size() : amount);
-
-		// Iterate throught and save transactions
-		for (; it != end_it; it++) {
-			result.push_back(*it);
-		}
+		// Copy max / requested elements from the end
+		copy_n(history.rbegin(), (amount > history.size()) ? history.size() : amount, back_inserter(result));
 
 		return result;
 	}
 
 	const std::vector<const Transaction*> Account::getAllTransaction() const
 	{
-		std::vector<const Transaction*> result;
-
-		// Initialize start and end pointers
-		std::vector<const Transaction*>::const_reverse_iterator it = history.crbegin();
-
-		// Iterate throught and save transactions
-		for (; it != history.crend(); it++) {
-			result.push_back(*it);
-		}
-
-		return result;
+		return getLastTransaction(history.size());
 	}
 }
